@@ -1,6 +1,7 @@
 "use client";
 
 import { ProfileInput } from "@/lib/finance";
+import { validateProfile } from "@/lib/validation";
 import { ChoiceField, MoneyField, NumField } from "./Fields";
 
 const STEPS = ["About you", "Income", "Expenses & EMIs", "Assets", "Liabilities", "Protection"];
@@ -19,23 +20,19 @@ export default function IntakeForm({
   onSubmit: () => void;
 }) {
   const last = STEPS.length - 1;
+  const errors = validateProfile(p);
 
-  // Cross-field validation
-  const ageError = p.retireAge <= p.age ? "Retirement age must be greater than current age." : "";
-  const lifeError = p.lifeExpectancy <= p.retireAge ? "Life expectancy must be greater than retirement age." : "";
-
-  // Per-step blockers: prevent advancing/submitting with invalid or empty essentials
   const stepBlocked = (() => {
-    if (step === 0) return !!ageError || !!lifeError;
-    if (step === 1) return p.salary + p.rentalIncome + p.otherIncome <= 0; // need some income
-    if (step === 2) return p.livingExpenses <= 0; // need expenses for ratios
+    if (step === 0) return !!errors.retireAge || !!errors.lifeExpectancy;
+    if (step === 1) return !!errors.salary;
+    if (step === 2) return !!errors.livingExpenses;
     return false;
   })();
 
   const blockMessage = (() => {
-    if (step === 0 && (ageError || lifeError)) return "Please fix the highlighted ages to continue.";
-    if (step === 1 && p.salary + p.rentalIncome + p.otherIncome <= 0) return "Enter at least one source of income to continue.";
-    if (step === 2 && p.livingExpenses <= 0) return "Enter your monthly living expenses to continue.";
+    if (step === 0 && (errors.retireAge || errors.lifeExpectancy)) return "Please fix the highlighted ages to continue.";
+    if (step === 1 && errors.salary) return errors.salary;
+    if (step === 2 && errors.livingExpenses) return errors.livingExpenses;
     return "";
   })();
 
@@ -51,17 +48,17 @@ export default function IntakeForm({
       </div>
 
       <h2 className="mb-1 font-display text-2xl font-600 text-ink">{STEPS[step]}</h2>
-      <p className="mb-6 text-sm text-sage-600">Step {step + 1} of {STEPS.length} · enter approximate figures, you can revise anytime.</p>
+      <p className="mb-6 text-sm text-sage-600">Step {step + 1} of {STEPS.length} - enter approximate figures, you can revise anytime.</p>
 
       <div key={step} className="rise space-y-5">
         {step === 0 && (
           <>
             <div className="grid grid-cols-2 gap-4">
               <NumField label="Your age" value={p.age} onChange={(v) => set("age", v)} min={18} max={75} suffix="yrs" />
-              <NumField label="Planned retirement age" value={p.retireAge} onChange={(v) => set("retireAge", v)} min={40} max={75} suffix="yrs" error={ageError} />
+              <NumField label="Planned retirement age" value={p.retireAge} onChange={(v) => set("retireAge", v)} min={40} max={75} suffix="yrs" error={errors.retireAge} />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <NumField label="Life expectancy" value={p.lifeExpectancy} onChange={(v) => set("lifeExpectancy", v)} min={60} max={100} suffix="yrs" error={lifeError} />
+              <NumField label="Life expectancy" value={p.lifeExpectancy} onChange={(v) => set("lifeExpectancy", v)} min={60} max={100} suffix="yrs" error={errors.lifeExpectancy} />
               <NumField label="Dependents" value={p.dependents} onChange={(v) => set("dependents", v)} min={0} max={10} />
             </div>
             <ChoiceField
@@ -87,7 +84,7 @@ export default function IntakeForm({
 
         {step === 2 && (
           <>
-            <MoneyField label="Monthly living expenses" value={p.livingExpenses} onChange={(v) => set("livingExpenses", v)} hint="Household, food, utilities, lifestyle — excluding EMIs." />
+            <MoneyField label="Monthly living expenses" value={p.livingExpenses} onChange={(v) => set("livingExpenses", v)} hint="Household, food, utilities, lifestyle - excluding EMIs." />
             <MoneyField label="Total monthly EMIs" value={p.totalEmi} onChange={(v) => set("totalEmi", v)} hint="All loan repayments combined." />
           </>
         )}
@@ -99,7 +96,7 @@ export default function IntakeForm({
             <MoneyField label="Retirement savings (EPF, PPF, NPS)" value={p.retirementSavings} onChange={(v) => set("retirementSavings", v)} />
             <div className="grid grid-cols-2 gap-4">
               <MoneyField label="Property (home + real estate)" value={p.property} onChange={(v) => set("property", v)} />
-              <MoneyField label="Other (gold, vehicle…)" value={p.otherAssets} onChange={(v) => set("otherAssets", v)} />
+              <MoneyField label="Other (gold, vehicle...)" value={p.otherAssets} onChange={(v) => set("otherAssets", v)} />
             </div>
           </>
         )}
@@ -117,7 +114,7 @@ export default function IntakeForm({
             <MoneyField label="Existing life insurance cover" value={p.lifeCover} onChange={(v) => set("lifeCover", v)} hint="Total term/life sum assured." />
             <MoneyField label="Existing health insurance cover" value={p.healthCover} onChange={(v) => set("healthCover", v)} hint="Family floater amount." />
             <div className="rounded-xl border border-sage-100 bg-white/60 p-4">
-              <div className="field-label mb-3">Assumptions (advanced — defaults are fine)</div>
+              <div className="field-label mb-3">Assumptions (advanced - defaults are fine)</div>
               <div className="grid grid-cols-3 gap-3">
                 <NumField label="Inflation" value={p.inflation} onChange={(v) => set("inflation", v)} min={2} max={12} step={0.5} suffix="%" />
                 <NumField label="Growth" value={p.preReturn} onChange={(v) => set("preReturn", v)} min={4} max={18} step={0.5} suffix="%" />
