@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { inr, inrCompact, ProfileInput, Report, Verdict } from "@/lib/finance";
 import GoalsPlanner from "./GoalsPlanner";
+import BudgetPlan from "./BudgetPlan";
 
 const V: Record<Verdict, { dot: string; text: string; chip: string; label: string }> = {
   good: { dot: "bg-sage-600", text: "text-sage-700", chip: "bg-sage-50 text-sage-700", label: "On track" },
@@ -173,9 +174,14 @@ export default function ReportView({
         </div>
       </div>
 
+      {/* monthly budget plan */}
+      <div className="rounded-2xl border border-sage-100 bg-white/40 p-5">
+        <BudgetPlan profile={profile} />
+      </div>
+
       {/* life goals */}
       <div className="rounded-2xl border border-sage-100 bg-sage-50/40 p-5">
-        <GoalsPlanner profile={profile} />
+        <GoalsPlanner profile={profile} surplus={r.monthlySurplus} />
       </div>
 
       <div className="flex justify-center pt-2">

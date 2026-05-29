@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { calcGoal, FinancialGoal, GOAL_PRESETS, inrCompact, ProfileInput } from "@/lib/finance";
+import { calcGoal, FinancialGoal, GOAL_PRESETS, groupIndian, inrCompact, ProfileInput } from "@/lib/finance";
 
 let idCounter = 0;
 const newId = () => `g${++idCounter}`;
 
-export default function GoalsPlanner({ profile }: { profile: ProfileInput }) {
+export default function GoalsPlanner({ profile, surplus }: { profile: ProfileInput; surplus: number }) {
   const [goals, setGoals] = useState<FinancialGoal[]>([
     { id: newId(), name: "Child's higher education", presentCost: 2500000, yearsAway: 15 },
   ]);
@@ -21,6 +21,10 @@ export default function GoalsPlanner({ profile }: { profile: ProfileInput }) {
   const results = goals.map((g) => calcGoal(g, profile.inflation, profile.preReturn));
   const totalSIP = results.reduce((s, r) => s + r.monthlySIP, 0);
   const usedPresets = new Set(goals.map((g) => g.name));
+
+  // Affordability against monthly surplus (income − expenses − EMIs)
+  const affordable = totalSIP <= surplus;
+  const leftover = surplus - totalSIP;
 
   return (
     <div>
@@ -37,6 +41,23 @@ export default function GoalsPlanner({ profile }: { profile: ProfileInput }) {
       <p className="mb-4 text-sm text-sage-600">
         Add goals like a child&apos;s education or marriage, a home, or early retirement. We inflate each goal to its target year and show the monthly SIP needed to reach it (at your assumed {profile.preReturn}% growth, {profile.inflation}% inflation).
       </p>
+
+      {/* affordability banner */}
+      {totalSIP > 0 && (
+        <div className={`mb-5 rounded-xl border px-4 py-3 text-sm ${affordable ? "border-sage-400 bg-sage-50/60 text-sage-700" : "border-clay bg-[#f7e4df] text-clay"}`}>
+          {surplus <= 0 ? (
+            <span>You currently have no monthly surplus to invest. Free up cash by reducing expenses or EMIs before committing to these goals.</span>
+          ) : affordable ? (
+            <span>
+              <strong>You can afford this.</strong> These goals need {inrCompact(totalSIP)}/mo and your monthly surplus is {inrCompact(surplus)} — leaving {inrCompact(leftover)} spare to invest or save further.
+            </span>
+          ) : (
+            <span>
+              <strong>This exceeds your surplus.</strong> These goals need {inrCompact(totalSIP)}/mo but you have {inrCompact(surplus)} available — a shortfall of {inrCompact(totalSIP - surplus)}/mo. Consider longer timelines, trimming goals, or raising income.
+            </span>
+          )}
+        </div>
+      )}
 
       {/* preset chips */}
       <div className="mb-5 flex flex-wrap gap-2">
@@ -66,19 +87,20 @@ export default function GoalsPlanner({ profile }: { profile: ProfileInput }) {
                   onChange={(e) => update(r.id, { name: e.target.value })}
                 />
               </div>
-              <div className="w-36">
+              <div className="w-40">
                 <label className="field-label">Cost today</label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sage-400">₹</span>
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sage-600">₹</span>
                   <input
-                    type="number"
+                    type="text"
                     inputMode="numeric"
-                    min={0}
-                    step={50000}
-                    className="field-input !py-2 !pl-7 !text-base"
-                    value={r.presentCost === 0 ? "" : r.presentCost}
+                    className="field-input !py-2 !pl-8 !text-base"
+                    value={groupIndian(r.presentCost)}
                     placeholder="0"
-                    onChange={(e) => update(r.id, { presentCost: Math.max(0, parseFloat(e.target.value) || 0) })}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/[^0-9]/g, "");
+                      update(r.id, { presentCost: digits === "" ? 0 : Math.max(0, parseInt(digits, 10)) });
+                    }}
                   />
                 </div>
               </div>

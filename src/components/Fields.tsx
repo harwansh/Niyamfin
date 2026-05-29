@@ -1,6 +1,6 @@
 "use client";
 
-import { inWords } from "@/lib/finance";
+import { groupIndian, inWords } from "@/lib/finance";
 
 export function MoneyField({
   label, value, onChange, hint, max = 1_000_000_000,
@@ -11,18 +11,16 @@ export function MoneyField({
     <div>
       <label className="field-label">{label}</label>
       <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-sage-400">₹</span>
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base font-medium text-sage-600">₹</span>
         <input
-          type="number"
+          type="text"
           inputMode="numeric"
-          min={0}
-          max={max}
-          step={1000}
           placeholder="0"
-          className={`field-input pl-9 ${tooBig ? "border-clay focus:border-clay focus:ring-clay/30" : ""}`}
-          value={value === 0 ? "" : value}
+          className={`field-input pl-10 ${words ? "pr-28" : ""} ${tooBig ? "border-clay focus:border-clay focus:ring-clay/30" : ""}`}
+          value={groupIndian(value)}
           onChange={(e) => {
-            const raw = e.target.value === "" ? 0 : parseFloat(e.target.value);
+            const digits = e.target.value.replace(/[^0-9]/g, "");
+            const raw = digits === "" ? 0 : parseInt(digits, 10);
             onChange(Math.min(max, Math.max(0, Number.isFinite(raw) ? raw : 0)));
           }}
         />

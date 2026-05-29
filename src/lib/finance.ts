@@ -21,6 +21,12 @@ export const inrCompact = (n: number) => {
 
 export const pct = (n: number) => `${n.toFixed(1)}%`;
 
+// Indian digit grouping without currency symbol: 2500000 -> "25,00,000"
+export const groupIndian = (n: number): string => {
+  if (!Number.isFinite(n) || n === 0) return "";
+  return Math.round(n).toLocaleString("en-IN");
+};
+
 // Plain-language Indian amount, e.g. 6000000 -> "60 Lakh", 12500000 -> "1.25 Crore"
 export const inWords = (n: number): string => {
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -66,6 +72,38 @@ export function calcGoal(g: FinancialGoal, inflation: number, expectedReturn: nu
   const n = Math.max(1, g.yearsAway * 12);
   const monthlySIP = Math.abs(rm) < 1e-9 ? futureCost / n : (futureCost * rm) / (Math.pow(1 + rm, n) - 1);
   return { ...g, futureCost, monthlySIP };
+}
+
+// Suggested monthly budget from income, anchored to CFP ratio thresholds:
+// EMI <=35% of income, savings >=20% (healthy), the rest for living expenses.
+export interface BudgetPlan {
+  income: number;
+  maxEmi: number;        // 35% ceiling (CFP debt-service rule)
+  comfortEmi: number;    // 30% comfortable
+  targetSavings: number; // 20% healthy target
+  minSavings: number;    // 10% floor (CFP savings-ratio rule)
+  suggestedExpenses: number; // what's left after comfortEmi + targetSavings
+  actualEmi: number;
+  actualExpenses: number;
+  actualSavings: number;
+  emiHeadroom: number;   // how much more EMI you could take before 35%
+}
+
+export function calcBudget(p: ProfileInput): BudgetPlan {
+  const income = p.salary + p.rentalIncome + p.otherIncome;
+  const maxEmi = income * 0.35;
+  const comfortEmi = income * 0.30;
+  const targetSavings = income * 0.20;
+  const minSavings = income * 0.10;
+  const suggestedExpenses = Math.max(0, income - comfortEmi - targetSavings);
+  const actualEmi = p.totalEmi;
+  const actualExpenses = p.livingExpenses;
+  const actualSavings = income - p.totalEmi - p.livingExpenses;
+  return {
+    income, maxEmi, comfortEmi, targetSavings, minSavings, suggestedExpenses,
+    actualEmi, actualExpenses, actualSavings,
+    emiHeadroom: Math.max(0, maxEmi - actualEmi),
+  };
 }
 
 export type Verdict = "good" | "watch" | "alert";
