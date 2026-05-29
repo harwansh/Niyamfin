@@ -7,6 +7,9 @@ frontend:
     build:
       commands:
         - npm run build
+        - echo "Build completed"
+        - ls -la
+        - ls -la out
   artifacts:
     baseDirectory: out
     files:
