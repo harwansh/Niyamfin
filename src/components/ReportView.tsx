@@ -47,19 +47,14 @@ export default function ReportView({
   const [ai, setAi] = useState<{ loading: boolean; text: string; error: string }>({ loading: false, text: "", error: "" });
 
   async function generateSummary() {
-    setAi({ loading: true, text: "", error: "" });
-    try {
-      const res = await fetch("/api/summary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile, report: r }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Request failed");
-      setAi({ loading: false, text: data.summary, error: "" });
-    } catch (e) {
-      setAi({ loading: false, text: "", error: e instanceof Error ? e.message : "Something went wrong" });
-    }
+    // This deployment is a static site, so there is no server route to call.
+    // The full report above is complete without AI. To enable the AI summary,
+    // deploy as a Next.js SSR app and restore the /api/summary route.
+    setAi({
+      loading: false,
+      text: "",
+      error: "The AI summary isn't enabled on this deployment. Your full report above is complete without it.",
+    });
   }
 
   return (
