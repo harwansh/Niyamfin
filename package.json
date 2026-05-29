@@ -2,12 +2,14 @@
   "name": "niyamfin",
   "version": "1.0.0",
   "private": true,
-  "description": "Open, no-storage financial planning portal — retirement, SIP/goal, and India income-tax calculators.",
+  "description": "Open, no-storage financial planning portal - retirement, SIP/goal, and India income-tax calculators.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "rm -rf .test-build && tsc -p tsconfig.test.json && node --test .test-build/tests/*.test.js"
   },
   "dependencies": {
     "next": "^14.2.33",
