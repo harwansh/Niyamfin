@@ -21,6 +21,53 @@ export const inrCompact = (n: number) => {
 
 export const pct = (n: number) => `${n.toFixed(1)}%`;
 
+// Plain-language Indian amount, e.g. 6000000 -> "60 Lakh", 12500000 -> "1.25 Crore"
+export const inWords = (n: number): string => {
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 1e7) {
+    const c = n / 1e7;
+    return `${c % 1 === 0 ? c : c.toFixed(2)} Crore`;
+  }
+  if (n >= 1e5) {
+    const l = n / 1e5;
+    return `${l % 1 === 0 ? l : l.toFixed(2)} Lakh`;
+  }
+  if (n >= 1e3) {
+    const k = n / 1e3;
+    return `${k % 1 === 0 ? k : k.toFixed(1)} Thousand`;
+  }
+  return "";
+};
+
+export interface FinancialGoal {
+  id: string;
+  name: string;
+  presentCost: number;
+  yearsAway: number;
+}
+
+export interface GoalResult extends FinancialGoal {
+  futureCost: number;
+  monthlySIP: number;
+}
+
+export const GOAL_PRESETS: { name: string; presentCost: number; yearsAway: number }[] = [
+  { name: "Child's higher education", presentCost: 2500000, yearsAway: 15 },
+  { name: "Child's marriage", presentCost: 2000000, yearsAway: 20 },
+  { name: "Early retirement boost", presentCost: 5000000, yearsAway: 12 },
+  { name: "Buy a home", presentCost: 8000000, yearsAway: 7 },
+  { name: "Dream car", presentCost: 1500000, yearsAway: 4 },
+  { name: "World vacation", presentCost: 800000, yearsAway: 3 },
+];
+
+export function calcGoal(g: FinancialGoal, inflation: number, expectedReturn: number): GoalResult {
+  const futureCost = g.presentCost * Math.pow(1 + inflation / 100, g.yearsAway);
+  const rm = expectedReturn / 100 / 12;
+  const n = Math.max(1, g.yearsAway * 12);
+  const monthlySIP = Math.abs(rm) < 1e-9 ? futureCost / n : (futureCost * rm) / (Math.pow(1 + rm, n) - 1);
+  return { ...g, futureCost, monthlySIP };
+}
+
 export type Verdict = "good" | "watch" | "alert";
 
 export interface ProfileInput {
@@ -57,26 +104,26 @@ export interface ProfileInput {
 }
 
 export const defaultProfile: ProfileInput = {
-  age: 32,
+  age: 30,
   retireAge: 60,
   lifeExpectancy: 85,
-  dependents: 2,
+  dependents: 1,
   cityTier: "metro",
-  salary: 120000,
+  salary: 0,
   rentalIncome: 0,
-  otherIncome: 5000,
-  livingExpenses: 55000,
-  totalEmi: 35000,
-  cashAndBank: 400000,
-  investments: 800000,
-  retirementSavings: 1200000,
-  property: 6000000,
-  otherAssets: 500000,
-  homeLoan: 4500000,
-  otherLoans: 300000,
-  creditCardDues: 50000,
-  lifeCover: 5000000,
-  healthCover: 500000,
+  otherIncome: 0,
+  livingExpenses: 0,
+  totalEmi: 0,
+  cashAndBank: 0,
+  investments: 0,
+  retirementSavings: 0,
+  property: 0,
+  otherAssets: 0,
+  homeLoan: 0,
+  otherLoans: 0,
+  creditCardDues: 0,
+  lifeCover: 0,
+  healthCover: 0,
   inflation: 6,
   preReturn: 11,
   postReturn: 7,

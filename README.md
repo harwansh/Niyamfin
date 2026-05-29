@@ -2,7 +2,7 @@
 
 An **open, no-login, no-storage** portal. A person answers a short guided questionnaire about their money, and gets back one comprehensive **Financial Health Report**: net worth, the five key personal-finance ratios, asset/liability composition, retirement readiness, and life & health insurance gaps — shown as graphs and plain-language insights.
 
-All numbers are computed by a **deterministic engine** whose rules come from the CFP (Certified Financial Planner) study material that seeded this project. Nothing is stored; everything runs in the browser. An **optional** AI summary can turn the numbers into a plain-language action plan if a server API key is configured.
+All numbers are computed by a **deterministic engine** whose rules come from the CFP (Certified Financial Planner) study material that seeded this project. Nothing is stored; everything runs in the browser. It also includes a **life-goals planner** (child's education, marriage, early retirement, home, etc.) that shows the monthly investment needed for each goal.
 
 ## What it computes
 
@@ -17,6 +17,7 @@ All numbers are computed by a **deterministic engine** whose rules come from the
 | Retirement corpus | Inflation-adjusted growing-annuity PV + required SIP | CFP Retirement Planning |
 | Life cover | Income replacement (HLV) + liabilities − liquid assets | CFP Risk, HLV / L.I.F.E. method |
 | Health cover | Tiered family-floater rule of thumb | — |
+| Life goals | Inflate goal to target year, solve required monthly SIP | standard TVM |
 
 > The CFP source PDFs are the knowledge base; the ratio thresholds above are quoted directly from that material.
 
@@ -36,11 +37,6 @@ npm run dev      # http://localhost:3000
 npm run build && npm start
 ```
 
-To enable the optional AI summary, copy `.env.example` to `.env.local` and add your key:
-
-```bash
-cp .env.example .env.local
-# set ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ## Structure

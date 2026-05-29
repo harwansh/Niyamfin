@@ -20,6 +20,25 @@ export default function IntakeForm({
 }) {
   const last = STEPS.length - 1;
 
+  // Cross-field validation
+  const ageError = p.retireAge <= p.age ? "Retirement age must be greater than current age." : "";
+  const lifeError = p.lifeExpectancy <= p.retireAge ? "Life expectancy must be greater than retirement age." : "";
+
+  // Per-step blockers: prevent advancing/submitting with invalid or empty essentials
+  const stepBlocked = (() => {
+    if (step === 0) return !!ageError || !!lifeError;
+    if (step === 1) return p.salary + p.rentalIncome + p.otherIncome <= 0; // need some income
+    if (step === 2) return p.livingExpenses <= 0; // need expenses for ratios
+    return false;
+  })();
+
+  const blockMessage = (() => {
+    if (step === 0 && (ageError || lifeError)) return "Please fix the highlighted ages to continue.";
+    if (step === 1 && p.salary + p.rentalIncome + p.otherIncome <= 0) return "Enter at least one source of income to continue.";
+    if (step === 2 && p.livingExpenses <= 0) return "Enter your monthly living expenses to continue.";
+    return "";
+  })();
+
   return (
     <div>
       <div className="mb-7 flex items-center gap-2">
@@ -39,10 +58,10 @@ export default function IntakeForm({
           <>
             <div className="grid grid-cols-2 gap-4">
               <NumField label="Your age" value={p.age} onChange={(v) => set("age", v)} min={18} max={75} suffix="yrs" />
-              <NumField label="Planned retirement age" value={p.retireAge} onChange={(v) => set("retireAge", v)} min={40} max={75} suffix="yrs" />
+              <NumField label="Planned retirement age" value={p.retireAge} onChange={(v) => set("retireAge", v)} min={40} max={75} suffix="yrs" error={ageError} />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <NumField label="Life expectancy" value={p.lifeExpectancy} onChange={(v) => set("lifeExpectancy", v)} min={60} max={100} suffix="yrs" />
+              <NumField label="Life expectancy" value={p.lifeExpectancy} onChange={(v) => set("lifeExpectancy", v)} min={60} max={100} suffix="yrs" error={lifeError} />
               <NumField label="Dependents" value={p.dependents} onChange={(v) => set("dependents", v)} min={0} max={10} />
             </div>
             <ChoiceField
@@ -109,7 +128,11 @@ export default function IntakeForm({
         )}
       </div>
 
-      <div className="mt-8 flex items-center justify-between">
+      {blockMessage && (
+        <p className="mt-6 rounded-lg bg-[#f7e4df] px-3 py-2 text-sm font-medium text-clay">{blockMessage}</p>
+      )}
+
+      <div className="mt-4 flex items-center justify-between">
         <button
           onClick={() => setStep(Math.max(0, step - 1))}
           disabled={step === 0}
@@ -120,14 +143,16 @@ export default function IntakeForm({
         {step < last ? (
           <button
             onClick={() => setStep(step + 1)}
-            className="rounded-xl bg-sage-900 px-6 py-2.5 text-sm font-semibold text-paper shadow-card transition hover:bg-sage-700"
+            disabled={stepBlocked}
+            className="rounded-xl bg-sage-900 px-6 py-2.5 text-sm font-semibold text-paper shadow-card transition hover:bg-sage-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Continue →
           </button>
         ) : (
           <button
             onClick={onSubmit}
-            className="rounded-xl bg-brass px-7 py-3 text-sm font-bold text-ink shadow-card transition hover:brightness-105"
+            disabled={stepBlocked}
+            className="rounded-xl bg-brass px-7 py-3 text-sm font-bold text-ink shadow-card transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Generate my report ✦
           </button>

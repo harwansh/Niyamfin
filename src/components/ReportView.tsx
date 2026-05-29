@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Cell,
   Pie,
@@ -12,6 +11,7 @@ import {
   Tooltip,
 } from "recharts";
 import { inr, inrCompact, ProfileInput, Report, Verdict } from "@/lib/finance";
+import GoalsPlanner from "./GoalsPlanner";
 
 const V: Record<Verdict, { dot: string; text: string; chip: string; label: string }> = {
   good: { dot: "bg-sage-600", text: "text-sage-700", chip: "bg-sage-50 text-sage-700", label: "On track" },
@@ -44,18 +44,6 @@ export default function ReportView({
   onRestart: () => void;
 }) {
   const r = report;
-  const [ai, setAi] = useState<{ loading: boolean; text: string; error: string }>({ loading: false, text: "", error: "" });
-
-  async function generateSummary() {
-    // This deployment is a static site, so there is no server route to call.
-    // The full report above is complete without AI. To enable the AI summary,
-    // deploy as a Next.js SSR app and restore the /api/summary route.
-    setAi({
-      loading: false,
-      text: "",
-      error: "The AI summary isn't enabled on this deployment. Your full report above is complete without it.",
-    });
-  }
 
   return (
     <div className="space-y-8">
@@ -185,19 +173,9 @@ export default function ReportView({
         </div>
       </div>
 
-      {/* optional AI summary */}
-      <div className="rounded-2xl border border-dashed border-sage-400 bg-white/50 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="font-display text-lg font-600 text-ink">AI advisor summary <span className="text-xs font-medium text-sage-600">(optional)</span></h3>
-            <p className="text-sm text-sage-600">Turn these numbers into a plain-language action plan. Requires an API key configured on the server.</p>
-          </div>
-          <button onClick={generateSummary} disabled={ai.loading} className="rounded-xl bg-sage-900 px-5 py-2.5 text-sm font-semibold text-paper transition hover:bg-sage-700 disabled:opacity-60">
-            {ai.loading ? "Thinking…" : ai.text ? "Regenerate" : "Generate summary"}
-          </button>
-        </div>
-        {ai.error && <p className="mt-3 rounded-lg bg-[#f7e4df] px-3 py-2 text-sm text-clay">{ai.error}</p>}
-        {ai.text && <div className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-ink">{ai.text}</div>}
+      {/* life goals */}
+      <div className="rounded-2xl border border-sage-100 bg-sage-50/40 p-5">
+        <GoalsPlanner profile={profile} />
       </div>
 
       <div className="flex justify-center pt-2">
