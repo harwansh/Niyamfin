@@ -4,6 +4,7 @@ import { useState } from "react";
 import IntakeForm from "@/components/IntakeForm";
 import ReportView from "@/components/ReportView";
 import { buildReport, defaultProfile, ProfileInput, Report } from "@/lib/finance";
+import { hasValidationErrors, sanitizeProfile, validateProfile } from "@/lib/validation";
 
 export default function Page() {
   const [profile, setProfile] = useState<ProfileInput>(defaultProfile);
@@ -11,10 +12,15 @@ export default function Page() {
   const [report, setReport] = useState<Report | null>(null);
 
   const set = <K extends keyof ProfileInput>(k: K, v: ProfileInput[K]) =>
-    setProfile((s) => ({ ...s, [k]: v }));
+    setProfile((s) => sanitizeProfile({ ...s, [k]: v }));
 
   function generate() {
-    setReport(buildReport(profile));
+    const cleanProfile = sanitizeProfile(profile);
+    const errors = validateProfile(cleanProfile);
+    if (hasValidationErrors(errors)) return;
+
+    setProfile(cleanProfile);
+    setReport(buildReport(cleanProfile));
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function restart() {
@@ -35,7 +41,7 @@ export default function Page() {
         <p className="mt-4 max-w-xl text-lg leading-relaxed text-sage-700">
           {report
             ? "Your financial health, read end to end. Every figure is computed in your browser from the details you entered."
-            : "Answer a few questions about your money. We'll read your complete financial health — net worth, debt, protection and retirement — in one report. Nothing is saved."}
+            : "Answer a few questions about your money. We'll read your complete financial health - net worth, debt, protection and retirement - in one report. Nothing is saved."}
         </p>
       </header>
 
@@ -48,7 +54,7 @@ export default function Page() {
       </section>
 
       <footer className="mt-10 text-center text-xs leading-relaxed text-sage-600">
-        Educational estimates grounded in CFP planning principles — not financial, investment, insurance, or tax advice.
+        Educational estimates grounded in CFP planning principles - not financial, investment, insurance, or tax advice.
         Verify with a SEBI-registered advisor before acting. All calculations run locally in your browser; nothing is stored.
       </footer>
     </main>
