@@ -2,18 +2,69 @@
 
 import { calcBudget, inr, inrCompact, ProfileInput } from "@/lib/finance";
 
-function Bar({ label, value, of, color, caption }: { label: string; value: number; of: number; color: string; caption: string }) {
-  const w = of > 0 ? Math.min(100, (value / of) * 100) : 0;
+// One comparison row: recommended vs actual, with a +/- delta.
+// goodWhen: "under" => being below the recommendation is good (EMI, expenses)
+//           "over"  => being above the recommendation is good (savings)
+function CompareRow({
+  label, recommended, actual, income, goodWhen, note,
+}: {
+  label: string;
+  recommended: number;
+  actual: number;
+  income: number;
+  goodWhen: "under" | "over";
+  note: string;
+}) {
+  const delta = actual - recommended; // + means actual is higher than recommended
+  const isGood = goodWhen === "under" ? actual <= recommended : actual >= recommended;
+  const recW = income > 0 ? Math.min(100, (recommended / income) * 100) : 0;
+  const actW = income > 0 ? Math.min(100, (Math.max(0, actual) / income) * 100) : 0;
+  const barColor = isGood ? "#3f5d44" : "#b9543f";
+
+  const deltaLabel =
+    delta === 0
+      ? "On target"
+      : delta > 0
+      ? `${inrCompact(delta)} more than suggested`
+      : `${inrCompact(Math.abs(delta))} less than suggested`;
+
   return (
-    <div>
-      <div className="mb-1 flex items-baseline justify-between">
-        <span className="text-sm font-medium text-ink">{label}</span>
-        <span className="font-display text-base font-600 text-ink">{inrCompact(value)}</span>
+    <div className="rounded-2xl border border-sage-100 bg-white/70 p-4">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-display text-base font-600 text-ink">{label}</span>
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+            isGood ? "bg-sage-50 text-sage-700" : "bg-[#f7e4df] text-clay"
+          }`}
+        >
+          {isGood ? "✓ " : "▲ "}
+          {deltaLabel}
+        </span>
       </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-sage-100">
-        <div className="h-full rounded-full" style={{ width: `${w}%`, background: color }} />
+
+      {/* recommended bar */}
+      <div className="mb-1.5">
+        <div className="mb-0.5 flex justify-between text-xs text-sage-600">
+          <span>Suggested</span>
+          <span className="font-semibold">{inrCompact(recommended)}</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-sage-100">
+          <div className="h-full rounded-full bg-sage-400" style={{ width: `${recW}%` }} />
+        </div>
       </div>
-      <div className="mt-1 text-xs text-sage-600">{caption}</div>
+
+      {/* actual bar */}
+      <div>
+        <div className="mb-0.5 flex justify-between text-xs text-sage-600">
+          <span>You now</span>
+          <span className="font-semibold text-ink">{inrCompact(actual)}</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-sage-100">
+          <div className="h-full rounded-full" style={{ width: `${actW}%`, background: barColor }} />
+        </div>
+      </div>
+
+      <p className="mt-2 text-xs text-sage-600">{note}</p>
     </div>
   );
 }
@@ -22,39 +73,60 @@ export default function BudgetPlan({ profile }: { profile: ProfileInput }) {
   const b = calcBudget(profile);
   if (b.income <= 0) return null;
 
-  const emiOver = b.actualEmi > b.maxEmi;
-  const savingsLow = b.actualSavings < b.minSavings;
-
   return (
     <div>
-      <h3 className="mb-1 font-display text-xl font-600 text-ink">Your suggested monthly plan</h3>
+      <h3 className="mb-1 font-display text-xl font-600 text-ink">Your plan vs. reality</h3>
       <p className="mb-5 text-sm text-sage-600">
-        A healthy split of your {inrCompact(b.income)} monthly income, based on standard planning limits — EMIs under 35%, savings at least 10–20%, the rest for living.
+        Here&apos;s how a healthy split of your {inrCompact(b.income)} monthly income compares with what you actually
+        do — and whether you&apos;re above or below in each area. (Limits: EMIs under 35%, savings 10–20%, the rest for living.)
       </p>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        {/* recommended split */}
-        <div className="space-y-4 rounded-2xl border border-sage-100 bg-white/70 p-5">
-          <div className="field-label">Recommended split</div>
-          <Bar label="Max EMI (loans)" value={b.comfortEmi} of={b.income} color="#b9543f" caption={`Hard ceiling ${inrCompact(b.maxEmi)} (35%). Stay at or below.`} />
-          <Bar label="Living expenses" value={b.suggestedExpenses} of={b.income} color="#6f8f72" caption="Household, food, lifestyle, utilities." />
-          <Bar label="Savings & investments" value={b.targetSavings} of={b.income} color="#3f5d44" caption={`Target 20%. Never below ${inrCompact(b.minSavings)} (10%).`} />
-        </div>
-
-        {/* your current split */}
-        <div className="space-y-4 rounded-2xl border border-sage-100 bg-white/70 p-5">
-          <div className="field-label">Where you are now</div>
-          <Bar label="Your EMIs" value={b.actualEmi} of={b.income} color={emiOver ? "#b9543f" : "#6f8f72"} caption={emiOver ? `Over the 35% ceiling by ${inrCompact(b.actualEmi - b.maxEmi)}.` : `Within limit — headroom of ${inrCompact(b.emiHeadroom)}.`} />
-          <Bar label="Your expenses" value={b.actualExpenses} of={b.income} color="#6f8f72" caption="As entered." />
-          <Bar label="Your savings" value={Math.max(0, b.actualSavings)} of={b.income} color={savingsLow ? "#c8a248" : "#3f5d44"} caption={b.actualSavings < 0 ? "You're spending more than you earn." : savingsLow ? "Below the 10% floor — try to lift this." : "Healthy savings rate."} />
-        </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <CompareRow
+          label="EMIs / loans"
+          recommended={b.comfortEmi}
+          actual={b.actualEmi}
+          income={b.income}
+          goodWhen="under"
+          note={
+            b.actualEmi > b.maxEmi
+              ? `Over the 35% hard ceiling of ${inrCompact(b.maxEmi)} — reduce debt where you can.`
+              : `Within the 35% ceiling (${inrCompact(b.maxEmi)}). Headroom: ${inrCompact(b.emiHeadroom)}.`
+          }
+        />
+        <CompareRow
+          label="Living expenses"
+          recommended={b.suggestedExpenses}
+          actual={b.actualExpenses}
+          income={b.income}
+          goodWhen="under"
+          note={
+            b.actualExpenses > b.suggestedExpenses
+              ? "Spending more than suggested — the biggest lever to free up savings."
+              : "Comfortably within the suggested living budget."
+          }
+        />
+        <CompareRow
+          label="Savings & investments"
+          recommended={b.targetSavings}
+          actual={Math.max(0, b.actualSavings)}
+          income={b.income}
+          goodWhen="over"
+          note={
+            b.actualSavings < 0
+              ? "You're spending more than you earn — no money left to save."
+              : b.actualSavings < b.minSavings
+              ? `Below the 10% floor (${inrCompact(b.minSavings)}). Try to lift this first.`
+              : `At or above the 20% target (${inrCompact(b.targetSavings)}). Great.`
+          }
+        />
       </div>
 
       <div className="mt-4 rounded-xl border border-sage-100 bg-sage-50/50 px-4 py-3 text-sm text-sage-700">
         <strong className="text-ink">In short:</strong>{" "}
         {b.actualSavings < 0
           ? `Your EMIs and expenses exceed your income by ${inr(Math.abs(b.actualSavings))} a month. Trimming expenses or reducing debt is the first priority.`
-          : `You have about ${inr(b.actualSavings)} a month after EMIs and expenses. ${b.emiHeadroom > 0 ? `You could take on up to ${inr(b.emiHeadroom)} more in EMIs if needed, ` : "You're at your EMI ceiling, "}and your healthy savings target is ${inr(b.targetSavings)}.`}
+          : `You have about ${inr(b.actualSavings)} a month after EMIs and expenses, versus a suggested savings target of ${inr(b.targetSavings)} — a ${b.actualSavings >= b.targetSavings ? "surplus" : "shortfall"} of ${inr(Math.abs(b.actualSavings - b.targetSavings))}.`}
       </div>
     </div>
   );

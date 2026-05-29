@@ -10,13 +10,19 @@ export function MoneyField({
   return (
     <div>
       <label className="field-label">{label}</label>
-      <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base font-medium text-sage-600">₹</span>
+      <div
+        className={`flex items-stretch overflow-hidden rounded-xl border bg-white/80 transition focus-within:ring-2 focus-within:ring-sage-400/30 ${
+          tooBig ? "border-clay focus-within:border-clay focus-within:ring-clay/30" : "border-sage-100 focus-within:border-sage-600"
+        }`}
+      >
+        <span className="flex select-none items-center border-r border-sage-100 bg-sage-50 px-4 text-lg font-semibold text-sage-700">
+          ₹
+        </span>
         <input
           type="text"
           inputMode="numeric"
           placeholder="0"
-          className={`field-input pl-10 ${words ? "pr-28" : ""} ${tooBig ? "border-clay focus:border-clay focus:ring-clay/30" : ""}`}
+          className="min-w-0 flex-1 bg-transparent px-4 py-3 text-lg font-medium text-ink outline-none"
           value={groupIndian(value)}
           onChange={(e) => {
             const digits = e.target.value.replace(/[^0-9]/g, "");
@@ -25,8 +31,8 @@ export function MoneyField({
           }}
         />
         {words && !tooBig && (
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-sage-600">
-            ₹{words}
+          <span className="flex select-none items-center whitespace-nowrap px-3 text-xs font-semibold text-sage-600">
+            {words}
           </span>
         )}
       </div>

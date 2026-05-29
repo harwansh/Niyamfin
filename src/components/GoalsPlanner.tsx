@@ -89,12 +89,12 @@ export default function GoalsPlanner({ profile, surplus }: { profile: ProfileInp
               </div>
               <div className="w-40">
                 <label className="field-label">Cost today</label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sage-600">₹</span>
+                <div className="flex items-stretch overflow-hidden rounded-xl border border-sage-100 bg-white/80 transition focus-within:border-sage-600 focus-within:ring-2 focus-within:ring-sage-400/30">
+                  <span className="flex select-none items-center border-r border-sage-100 bg-sage-50 px-2.5 text-sage-700">₹</span>
                   <input
                     type="text"
                     inputMode="numeric"
-                    className="field-input !py-2 !pl-8 !text-base"
+                    className="min-w-0 flex-1 bg-transparent px-3 py-2 text-base font-medium text-ink outline-none"
                     value={groupIndian(r.presentCost)}
                     placeholder="0"
                     onChange={(e) => {
