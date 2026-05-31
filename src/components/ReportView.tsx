@@ -17,6 +17,7 @@ import WhatIfSliders from "./WhatIfSliders";
 import DebtPayoffPlanner from "./DebtPayoffPlanner";
 import FinancialTimeline from "./FinancialTimeline";
 import ErrorBoundary from "./ErrorBoundary";
+import UpgradeSignup from "./UpgradeSignup";
 
 const V: Record<Verdict, { dot: string; text: string; chip: string; label: string }> = {
   good: { dot: "bg-sage-600", text: "text-sage-700", chip: "bg-sage-50 text-sage-700", label: "On track" },
@@ -151,14 +152,46 @@ export default function ReportView({
                       {V[ratio.verdict].label}
                     </div>
                     <div className="mt-1 text-[11px] text-sage-600">Ideal {ratio.ideal}</div>
-                    <p className="mt-1.5 text-[11px] leading-snug text-sage-500">{ratio.note}</p>
                   </div>
+                  {ratio.interpretation && (
+                    <p className="mt-3 border-t border-sage-100 pt-3 text-xs leading-relaxed text-sage-700">
+                      {ratio.interpretation}
+                    </p>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
       </Section>
+
+      {/* Top 3 focus areas */}
+      {r.focusAreas.length > 0 && (
+        <Section>
+          <div className="rounded-2xl border border-brass/30 bg-[#f6efd9]/40 p-5">
+            <h3 className="mb-1 font-display text-xl font-600 text-ink">Top {r.focusAreas.length} focus areas</h3>
+            <p className="mb-4 text-xs text-sage-600">
+              Based on your numbers, these are the areas that — according to common personal-finance benchmarks — tend
+              to have the most impact. These are educational observations, not recommendations.
+            </p>
+            <ol className="space-y-3">
+              {r.focusAreas.map((f) => (
+                <li key={f.rank} className="flex items-start gap-4 rounded-2xl border border-sage-100 bg-white/70 p-4">
+                  <span className={`mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full text-sm font-bold ${
+                    f.verdict === "alert" ? "bg-[#f7e4df] text-clay" : f.verdict === "watch" ? "bg-[#f6efd9] text-[#8a6d1f]" : "bg-sage-50 text-sage-700"
+                  }`}>
+                    {f.rank}
+                  </span>
+                  <div>
+                    <div className="font-display text-base font-600 text-ink">{f.title}</div>
+                    <p className="mt-0.5 text-sm leading-relaxed text-sage-700">{f.why}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </Section>
+      )}
 
       {/* Asset / liability composition */}
       <Section>
@@ -359,6 +392,11 @@ export default function ReportView({
         <div className="rounded-2xl border border-sage-100 bg-sage-50/40 p-5">
           <GoalsPlanner profile={profile} surplus={r.monthlySurplus} />
         </div>
+      </Section>
+
+      {/* Upgrade email signup */}
+      <Section>
+        <UpgradeSignup />
       </Section>
 
       <div className="flex justify-center pt-2">

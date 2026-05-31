@@ -157,16 +157,25 @@ export default function Page() {
         <p className="mt-4 max-w-xl text-lg leading-relaxed text-sage-700">
           {report
             ? "An educational read of your financial health, computed in your browser from the details entered. Estimates only — not financial advice."
-            : "Answer a few questions about your money and see an educational snapshot of your financial health — net worth, ratios, retirement, protection, budget and goals. Nothing is saved, and it's not financial advice."}
+            : "Answer a few questions about your money and get a free educational snapshot of your financial health — net worth, emergency cover, retirement gap, insurance, budget, and goals. Nothing is saved or shared."}
         </p>
         {!report && (
-          <button
-            type="button"
-            onClick={showSample}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl border border-sage-100 bg-white/70 px-4 py-2.5 text-sm font-semibold text-sage-700 transition hover:border-sage-400"
-          >
-            👀 See a sample report first
-          </button>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => document.getElementById("intake-form")?.scrollIntoView({ behavior: "smooth" })}
+              className="inline-flex items-center gap-2 rounded-xl bg-sage-900 px-6 py-3 text-sm font-bold text-paper shadow-card transition hover:bg-sage-700"
+            >
+              Start your free financial health check →
+            </button>
+            <button
+              type="button"
+              onClick={showSample}
+              className="inline-flex items-center gap-2 rounded-xl border border-sage-100 bg-white/70 px-4 py-2.5 text-sm font-semibold text-sage-700 transition hover:border-sage-400"
+            >
+              👀 See a sample first
+            </button>
+          </div>
         )}
       </header>
 
@@ -209,13 +218,50 @@ export default function Page() {
         </div>
       )}
 
-      <section className="rounded-3xl border border-sage-100 bg-white/50 p-6 shadow-card backdrop-blur-sm sm:p-9">
+      <section id="intake-form" className="rounded-3xl border border-sage-100 bg-white/50 p-6 shadow-card backdrop-blur-sm sm:p-9">
         {report ? (
           <ReportView report={report} profile={profile} onRestart={restart} />
         ) : (
           <IntakeForm step={step} setStep={setStep} p={profile} set={set} onSubmit={generate} />
         )}
       </section>
+
+      {/* FAQ */}
+      {!report && (
+        <section className="mt-10" aria-labelledby="faq-heading">
+          <h2 className="mb-4 font-display text-2xl font-600 text-ink" id="faq-heading">Common questions</h2>
+          <div className="space-y-2">
+            {[
+              {
+                q: "Is my data saved anywhere?",
+                a: "No. Every calculation runs entirely in your browser. Nothing you enter is sent to any server, stored in a database, or shared with anyone. When you close the tab, the data is gone — except for your draft, which is saved only on your own device in browser storage and never leaves it.",
+              },
+              {
+                q: "Is this financial advice?",
+                a: "No. Niyamfin gives educational estimates based on standard personal-finance formulas (the same benchmarks taught in CFP courses). It does not know your full situation, tax position, goals, or risk tolerance. Always verify important decisions with a SEBI-registered investment adviser or a qualified financial professional.",
+              },
+              {
+                q: "Who should use this?",
+                a: "Anyone in India who wants a quick, private snapshot of their financial health — salaried professionals, self-employed individuals, or anyone starting to plan for retirement, insurance, or life goals. It works best if you have a rough sense of your income, expenses, assets, and outstanding loans.",
+              },
+              {
+                q: "Can I rely on this for investment decisions?",
+                a: "No. The numbers are illustrative estimates based on the figures you enter and the assumptions chosen (inflation, returns, retirement age). Real outcomes depend on market performance, taxes, life events, and many other factors. Use this as a starting-point conversation with yourself — then consult a professional before committing money.",
+              },
+            ].map(({ q, a }) => (
+              <details key={q} className="group rounded-2xl border border-sage-100 bg-white/60">
+                <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 font-semibold text-ink [&::-webkit-details-marker]:hidden">
+                  {q}
+                  <span className="ml-4 flex-none text-sage-400 transition group-open:rotate-45">+</span>
+                </summary>
+                <div className="border-t border-sage-100 px-5 pb-4 pt-3 text-sm leading-relaxed text-sage-700">
+                  {a}
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
 
       <footer className="mt-10 space-y-4 text-center">
         <nav aria-label="Site links" className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs font-medium text-sage-600">

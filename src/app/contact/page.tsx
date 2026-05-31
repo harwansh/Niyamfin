@@ -12,11 +12,9 @@ export default function Contact() {
       <H2>Get in touch</H2>
       <p>
         Email:{" "}
-        <a href="mailto:hello@niyamfin.example" className="text-sage-700 underline">
-          hello@niyamfin.example
+        <a href="mailto:Hello@niyamfin.com" className="text-sage-700 underline">
+          Hello@niyamfin.com
         </a>
-        <br />
-        <span className="text-sm text-sage-600">(Replace with your real address before launch.)</span>
       </p>
       <H2>Please note</H2>
       <p>
