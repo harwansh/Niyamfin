@@ -8,8 +8,8 @@ export const clampNumber = (value: number, min = 0, max = Number.POSITIVE_INFINI
   Math.min(max, Math.max(min, finite(value, min)));
 
 export function sanitizeProfile(input: ProfileInput): ProfileInput {
-  const age = clampNumber(input.age, 18, 75);
-  const retireAge = clampNumber(input.retireAge, 40, 75);
+  const age = clampNumber(input.age, 18, 85);
+  const retireAge = clampNumber(input.retireAge, 40, 85);
   const lifeExpectancy = clampNumber(input.lifeExpectancy, 60, 100);
 
   return {
@@ -70,6 +70,8 @@ export function warnProfile(input: ProfileInput): ProfileWarnings {
   if (p.creditCardDues > 0 && income > 0 && p.creditCardDues > income * 12)
     w.creditCardDues = "That's a very large card balance relative to income — please confirm.";
   if (p.salary > 10_000_000) w.salary = "That's an unusually high monthly salary — confirm the amount.";
+  if (p.postReturn >= p.preReturn)
+    w.postReturn = "Post-retirement return is usually lower than pre-retirement return — please confirm.";
 
   return w;
 }

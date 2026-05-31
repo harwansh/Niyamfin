@@ -78,8 +78,8 @@ export default function IntakeForm({
         {step === 0 && (
           <fieldset className="contents" aria-label="About you">
             <div className="grid grid-cols-2 gap-4">
-              <NumField label="Your age" value={p.age} onChange={(v) => set("age", v)} min={18} max={75} suffix="yrs" />
-              <NumField label="Planned retirement age" value={p.retireAge} onChange={(v) => set("retireAge", v)} min={40} max={75} suffix="yrs" error={errors.retireAge} />
+              <NumField label="Your age" value={p.age} onChange={(v) => set("age", v)} min={18} max={85} suffix="yrs" />
+              <NumField label="Planned retirement age" value={p.retireAge} onChange={(v) => set("retireAge", v)} min={40} max={85} suffix="yrs" error={errors.retireAge} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <NumField label="Life expectancy" value={p.lifeExpectancy} onChange={(v) => set("lifeExpectancy", v)} min={60} max={100} suffix="yrs" error={errors.lifeExpectancy} />
@@ -146,8 +146,8 @@ export default function IntakeForm({
                 <legend className="field-label mb-3">Assumptions (advanced — defaults are fine)</legend>
                 <div className="grid grid-cols-3 gap-3">
                   <NumField label="Inflation" value={p.inflation} onChange={(v) => set("inflation", v)} min={2} max={12} step={0.5} suffix="%" />
-                  <NumField label="Growth" value={p.preReturn} onChange={(v) => set("preReturn", v)} min={4} max={18} step={0.5} suffix="%" />
-                  <NumField label="Post-ret." value={p.postReturn} onChange={(v) => set("postReturn", v)} min={3} max={12} step={0.5} suffix="%" />
+                  <NumField label="Pre-ret. return" value={p.preReturn} onChange={(v) => set("preReturn", v)} min={4} max={18} step={0.5} suffix="%" />
+                  <NumField label="Post-ret. return" value={p.postReturn} onChange={(v) => set("postReturn", v)} min={3} max={12} step={0.5} suffix="%" warning={warnings.postReturn} />
                 </div>
               </fieldset>
             </div>

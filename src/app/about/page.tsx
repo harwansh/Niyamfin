@@ -16,7 +16,7 @@ export default function About() {
       </p>
       <H2>What it is</H2>
       <p>
-        An educational calculator. Every number is computed in your browser using standard, publicly-documented
+        Niyamfin is an educational calculator. Every number is computed in your browser using standard, publicly-documented
         personal-finance formulas. You can read exactly how each
         figure is derived on the <a href="/methodology" className="text-sage-700 underline">Methodology</a> page.
       </p>

@@ -46,15 +46,7 @@ function CopyLinkButton({ url }: { url: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }).catch(() => {
-      // fallback for browsers without clipboard API
-      const el = document.createElement("textarea");
-      el.value = url;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopied(false);
     });
   }
   return (
@@ -74,6 +66,7 @@ export default function Page() {
   const [report, setReport] = useState<Report | null>(null);
   const [isSample, setIsSample] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const skipSave = useRef(true); // don't overwrite localStorage on the initial mount restore
 
@@ -102,6 +95,7 @@ export default function Page() {
         const p = sanitizeProfile({ ...defaultProfile, ...JSON.parse(saved) });
         setProfile(p);
         setDraftRestored(true);
+        setHasDraft(true);
       }
     } catch {}
 
@@ -113,6 +107,7 @@ export default function Page() {
     if (skipSave.current) return;
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(profile));
+      setHasDraft(true);
     } catch {}
   }, [profile]);
 
@@ -149,6 +144,7 @@ export default function Page() {
     setIsSample(false);
     setShareUrl("");
     setDraftRestored(false);
+    setHasDraft(false);
     setProfile(defaultProfile);
     setStep(0);
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
@@ -156,9 +152,18 @@ export default function Page() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function editInputs() {
+    setReport(null);
+    setIsSample(false);
+    setShareUrl("");
+    window.history.replaceState(null, "", window.location.pathname);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function clearDraft() {
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     setDraftRestored(false);
+    setHasDraft(false);
     setProfile(defaultProfile);
     setStep(0);
   }
@@ -170,7 +175,7 @@ export default function Page() {
           <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" /> No login · Financial inputs stay on your device · Private by design
         </div>
         <h1 className="font-display text-5xl font-700 leading-[0.95] tracking-tight text-ink sm:text-7xl">
-          Niyamfin
+          Niyam<span className="text-sage-600">fin</span>
         </h1>
         <p className="mt-4 max-w-xl text-lg leading-relaxed text-sage-700">
           {report
@@ -204,7 +209,7 @@ export default function Page() {
             { icon: "🛡", label: "Emergency fund cover" },
             { icon: "📊", label: "Debt & EMI health" },
             { icon: "🌿", label: "Retirement readiness" },
-            { icon: "🔒", label: "Insurance gap estimate" },
+            { icon: "🔒", label: "Illustrative protection gap" },
             { icon: "📋", label: "Monthly budget benchmark" },
           ].map(({ icon, label }) => (
             <div key={label} className="flex items-center gap-2 rounded-xl border border-sage-100 bg-white/60 px-3 py-2.5 text-sm font-medium text-sage-700">
@@ -247,7 +252,7 @@ export default function Page() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sage-100 bg-white/60 px-5 py-3">
           <div>
             <p className="text-sm font-semibold text-ink">Bookmark or share this scenario</p>
-            <p className="text-xs text-sage-600">The link encodes your inputs — no data leaves your device or our servers.</p>
+            <p className="text-xs text-sage-600">The link encodes your inputs — no data leaves your device or our servers. Only share with people you trust with your financial details.</p>
           </div>
           <CopyLinkButton url={shareUrl} />
         </div>
@@ -267,15 +272,17 @@ export default function Page() {
               <li>• You can clear the draft anytime using the button below</li>
             </ul>
           </details>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-sage-600">Your progress may be saved locally on this device. It is not sent to Niyamfin.</p>
-            <ClearDraftButton onClear={clearDraft} />
-          </div>
+          {hasDraft && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-sage-600">Your progress may be saved locally on this device. It is not sent to Niyamfin.</p>
+              <ClearDraftButton onClear={clearDraft} />
+            </div>
+          )}
         </div>
       )}
       <section id="intake-form" className="rounded-3xl border border-sage-100 bg-white/50 p-6 shadow-card backdrop-blur-sm sm:p-9">
         {report ? (
-          <ReportView report={report} profile={profile} onRestart={restart} />
+          <ReportView report={report} profile={profile} onRestart={restart} onEdit={editInputs} />
         ) : (
           <IntakeForm step={step} setStep={setStep} p={profile} set={set} onSubmit={generate} />
         )}
@@ -289,7 +296,7 @@ export default function Page() {
             {[
               {
                 q: "Is my data saved anywhere?",
-                a: "Your financial inputs are not sent to our servers. In-progress drafts may be saved locally on your device.",
+                a: "Your financial inputs are not sent to our servers. In-progress drafts may be saved locally on your device only. Use the \"Clear saved draft\" button above the form to remove them at any time.",
               },
               {
                 q: "Is this financial advice?",
