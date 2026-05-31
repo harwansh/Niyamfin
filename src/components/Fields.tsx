@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { groupIndian, inWords } from "@/lib/finance";
 
 export function MoneyField({
@@ -51,20 +52,43 @@ export function MoneyField({
 export function NumField({
   label, value, onChange, min = 0, max, step = 1, suffix, error,
 }: { label: string; value: number; onChange: (n: number) => void; min?: number; max?: number; step?: number; suffix?: string; error?: string }) {
+  // Local text buffer so the user can clear/retype freely without the value
+  // snapping to min/max mid-typing. We emit numbers on change and clamp on blur.
+  const [text, setText] = useState<string>(String(value ?? ""));
+
+  // Keep buffer in sync when the value changes from outside (e.g. sample/reset),
+  // but not while the user is actively editing the same number.
+  useEffect(() => {
+    if (parseFloat(text) !== value) setText(value === 0 && text === "" ? "" : String(value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
   const invalid = !!error || (max !== undefined && value > max) || value < min;
+
   return (
     <div>
       <label className="field-label">{label}</label>
       <div className="relative">
         <input
-          type="number"
+          type="text"
           inputMode="numeric"
-          min={min}
-          max={max}
-          step={step}
           className={`field-input ${suffix ? "pr-12" : ""} ${invalid ? "border-clay focus:border-clay focus:ring-clay/30" : ""}`}
-          value={Number.isFinite(value) ? value : 0}
-          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+          value={text}
+          onChange={(e) => {
+            const t = e.target.value;
+            // allow only digits (and a single leading nothing); keep it as typed
+            if (!/^\d*$/.test(t)) return;
+            setText(t);
+            if (t !== "") onChange(parseInt(t, 10));
+          }}
+          onBlur={() => {
+            let n = text === "" ? min : parseInt(text, 10);
+            if (!Number.isFinite(n)) n = min;
+            if (n < min) n = min;
+            if (max !== undefined && n > max) n = max;
+            setText(String(n));
+            onChange(n);
+          }}
         />
         {suffix && <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-sage-400">{suffix}</span>}
       </div>

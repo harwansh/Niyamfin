@@ -107,13 +107,16 @@ export default function GoalsPlanner({ profile, surplus }: { profile: ProfileInp
               <div className="w-24">
                 <label className="field-label">Years away</label>
                 <input
-                  type="number"
+                  type="text"
                   inputMode="numeric"
-                  min={1}
-                  max={50}
                   className="field-input !py-2 !text-base"
-                  value={r.yearsAway}
-                  onChange={(e) => update(r.id, { yearsAway: Math.min(50, Math.max(1, parseFloat(e.target.value) || 1)) })}
+                  value={r.yearsAway === 0 ? "" : r.yearsAway}
+                  onChange={(e) => {
+                    const t = e.target.value;
+                    if (!/^\d*$/.test(t)) return;
+                    update(r.id, { yearsAway: t === "" ? 0 : parseInt(t, 10) });
+                  }}
+                  onBlur={() => update(r.id, { yearsAway: Math.min(50, Math.max(1, r.yearsAway || 1)) })}
                 />
               </div>
               <button

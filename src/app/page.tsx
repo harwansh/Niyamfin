@@ -14,7 +14,7 @@ export default function Page() {
   const [isSample, setIsSample] = useState(false);
 
   const set = <K extends keyof ProfileInput>(k: K, v: ProfileInput[K]) =>
-    setProfile((s) => sanitizeProfile({ ...s, [k]: v }));
+    setProfile((s) => ({ ...s, [k]: v }));
 
   function generate() {
     const cleanProfile = sanitizeProfile(profile);
