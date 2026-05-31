@@ -75,7 +75,7 @@ export function MoneyField({
 }
 
 export function NumField({
-  label, value, onChange, min = 0, max, step = 1, suffix, error,
+  label, value, onChange, min = 0, max, step = 1, suffix, error, warning,
 }: {
   label: string;
   value: number;
@@ -85,6 +85,7 @@ export function NumField({
   step?: number;
   suffix?: string;
   error?: string;
+  warning?: string;
 }) {
   const id = useId();
   const errorId = `${id}-error`;
@@ -134,11 +135,11 @@ export function NumField({
           </span>
         )}
       </div>
-      {error && (
-        <p id={errorId} role="alert" className="mt-1 text-xs font-medium text-clay">
-          {error}
-        </p>
-      )}
+      {error ? (
+        <p id={errorId} role="alert" className="mt-1 text-xs font-medium text-clay">{error}</p>
+      ) : warning ? (
+        <p id={errorId} role="alert" className="mt-1 text-xs font-medium text-[#8a6d1f]">⚠ {warning}</p>
+      ) : null}
     </div>
   );
 }

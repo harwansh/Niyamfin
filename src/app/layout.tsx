@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Niyamfin — Private Financial Health Calculator for India",
     description:
-      "Get a private, browser-only snapshot of your financial health — net worth, emergency cover, retirement gap, insurance, and goals. No login. Nothing saved.",
+      "Get a private, browser-only snapshot of your financial health — net worth, emergency cover, retirement gap, illustrative protection gap, and goals. No login. No financial inputs stored on our servers.",
     url: "https://niyamfin.com",
     siteName: "Niyamfin",
     locale: "en_IN",
@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Niyamfin — Free Financial Health Check",
+    title: "Niyamfin — Private Financial Health Calculator for India",
     description:
-      "Private, browser-only financial health snapshot. Net worth, retirement gap, insurance check, goals — computed instantly. No login. Nothing stored.",
+      "Private, browser-only financial health snapshot. Net worth, retirement gap, illustrative protection gap, goals — computed instantly. No login. No financial inputs stored on our servers.",
   },
 };
 

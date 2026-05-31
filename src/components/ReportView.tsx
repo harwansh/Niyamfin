@@ -52,10 +52,12 @@ export default function ReportView({
   report,
   profile,
   onRestart,
+  onEdit,
 }: {
   report: Report;
   profile: ProfileInput;
   onRestart: () => void;
+  onEdit: () => void;
 }) {
   const r = report;
 
@@ -402,15 +404,15 @@ export default function ReportView({
       <div className="flex flex-wrap justify-center gap-3 pt-2">
         <button
           type="button"
-          onClick={onRestart}
-          className="rounded-xl border border-sage-100 bg-white/70 px-6 py-2.5 text-sm font-medium text-sage-700 transition hover:border-sage-400"
+          onClick={onEdit}
+          className="rounded-xl bg-sage-900 px-6 py-2.5 text-sm font-semibold text-paper shadow-card transition hover:bg-sage-700"
         >
           ✎ Edit inputs
         </button>
         <button
           type="button"
           onClick={onRestart}
-          className="rounded-xl border border-sage-100 bg-white/70 px-6 py-2.5 text-sm font-medium text-sage-700 transition hover:border-sage-400"
+          className="rounded-xl border border-sage-100 bg-white/70 px-6 py-2.5 text-sm font-medium text-sage-600 transition hover:border-sage-400 hover:text-sage-900"
         >
           ↻ Start over
         </button>

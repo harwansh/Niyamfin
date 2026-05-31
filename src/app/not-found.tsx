@@ -23,10 +23,10 @@ export default function NotFound() {
           Go to Niyamfin →
         </Link>
         <Link
-          href="/methodology"
+          href="/about"
           className="rounded-xl border border-sage-100 bg-white/70 px-6 py-3 text-sm font-semibold text-sage-700 transition hover:border-sage-400"
         >
-          Methodology
+          About Niyamfin
         </Link>
       </div>
 
