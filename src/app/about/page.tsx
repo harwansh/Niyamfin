@@ -17,7 +17,7 @@ export default function About() {
       <H2>What it is</H2>
       <p>
         An educational calculator. Every number is computed in your browser using standard, publicly-documented
-        personal-finance formulas (the same kind taught in financial-planning curricula). You can read exactly how each
+        personal-finance formulas. You can read exactly how each
         figure is derived on the <a href="/methodology" className="text-sage-700 underline">Methodology</a> page.
       </p>
       <H2>What it is not</H2>
