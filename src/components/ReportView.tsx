@@ -48,6 +48,31 @@ export default function ReportView({
 
   return (
     <div className="space-y-8">
+      {/* educational disclaimer + assumptions disclosure */}
+      <div className="rise rounded-2xl border border-brass/40 bg-[#f6efd9]/50 px-5 py-4">
+        <p className="text-sm leading-relaxed text-[#7a6019]">
+          <strong>This is an educational estimate, not financial advice.</strong> Every figure below is calculated from
+          the details you entered using standard personal-finance formulas. Results depend on the assumptions shown and
+          will differ from real outcomes. Please verify with a SEBI-registered adviser before making any decision.
+        </p>
+        <details className="group mt-3">
+          <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-wide text-[#8a6d1f] [&::-webkit-details-marker]:hidden">
+            <span className="group-open:hidden">▸ Show the assumptions used in this report</span>
+            <span className="hidden group-open:inline">▾ Assumptions used in this report</span>
+          </summary>
+          <div className="mt-3 grid gap-x-6 gap-y-1.5 text-xs text-sage-700 sm:grid-cols-2">
+            <span>• Inflation assumed: <strong>{profile.inflation}% / year</strong></span>
+            <span>• Pre-retirement return: <strong>{profile.preReturn}% / year</strong></span>
+            <span>• Post-retirement return: <strong>{profile.postReturn}% / year</strong></span>
+            <span>• Retirement age: <strong>{profile.retireAge}</strong>, life expectancy: <strong>{profile.lifeExpectancy}</strong></span>
+            <span className="sm:col-span-2 mt-1 text-sage-600">
+              Benchmarks used: EMIs under 35% of income, savings 10–20%, emergency cover 3–6 months, debt-to-asset under
+              50%. These are general rules of thumb. See the <a href="/methodology" className="underline">Methodology</a> page for full formulas.
+            </span>
+          </div>
+        </details>
+      </div>
+
       {/* headline net worth */}
       <div className="rise grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-sage-100 bg-sage-900 px-6 py-6 text-paper shadow-card sm:col-span-1">
@@ -152,14 +177,15 @@ export default function ReportView({
 
       {/* protection + retirement cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <GapCard title="Retirement corpus" have={r.retirementProjected} need={r.retirementCorpusNeeded} gap={r.retirementGap} extra={r.retirementGap > 0 ? `Invest ${inrCompact(r.retirementSIP)}/mo to close it` : "Fully funded"} />
-        <GapCard title="Life insurance" have={profile.lifeCover} need={r.recommendedLifeCover} gap={r.lifeCoverGap} extra={r.lifeCoverGap > 0 ? "Term cover recommended" : "Adequately covered"} />
-        <GapCard title="Health insurance" have={profile.healthCover} need={r.recommendedHealthCover} gap={r.healthCoverGap} extra={r.healthCoverGap > 0 ? "Consider a top-up" : "Sufficient floater"} />
+        <GapCard title="Retirement corpus" have={r.retirementProjected} need={r.retirementCorpusNeeded} gap={r.retirementGap} extra={r.retirementGap > 0 ? `${inrCompact(r.retirementSIP)}/mo would close the gap (illustrative)` : "Meets the estimate"} />
+        <GapCard title="Life insurance" have={profile.lifeCover} need={r.recommendedLifeCover} gap={r.lifeCoverGap} extra={r.lifeCoverGap > 0 ? "Below the estimate" : "Within the estimate"} />
+        <GapCard title="Health insurance" have={profile.healthCover} need={r.recommendedHealthCover} gap={r.healthCoverGap} extra={r.healthCoverGap > 0 ? "Below the rule-of-thumb" : "Within the rule-of-thumb"} />
       </div>
 
       {/* insights */}
       <div>
-        <h3 className="mb-3 font-display text-xl font-600 text-ink">What this means</h3>
+        <h3 className="mb-1 font-display text-xl font-600 text-ink">What this means</h3>
+        <p className="mb-3 text-xs text-sage-600">General observations based on common benchmarks — not personalised recommendations.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           {r.insights.map((ins) => (
             <div key={ins.title} className="rounded-2xl border border-sage-100 bg-white/70 p-4">
@@ -200,7 +226,7 @@ function GapCard({ title, have, need, gap, extra }: { title: string; have: numbe
     <div className="rounded-2xl border border-sage-100 bg-white/70 p-5">
       <div className="field-label">{title}</div>
       <div className="mt-1 font-display text-2xl font-700 text-ink">{inrCompact(need)}</div>
-      <div className="text-xs text-sage-600">recommended</div>
+      <div className="text-xs text-sage-600">estimate</div>
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-sage-100">
         <div className={`h-full rounded-full ${ok ? "bg-sage-600" : "bg-brass"}`} style={{ width: `${filled}%` }} />
       </div>

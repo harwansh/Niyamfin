@@ -167,6 +167,33 @@ export const defaultProfile: ProfileInput = {
   postReturn: 7,
 };
 
+// Illustrative figures for the "See a sample report" demo. Not real data.
+export const sampleProfile: ProfileInput = {
+  age: 34,
+  retireAge: 60,
+  lifeExpectancy: 85,
+  dependents: 2,
+  cityTier: "metro",
+  salary: 145000,
+  rentalIncome: 0,
+  otherIncome: 8000,
+  livingExpenses: 62000,
+  totalEmi: 38000,
+  cashAndBank: 450000,
+  investments: 950000,
+  retirementSavings: 1400000,
+  property: 7500000,
+  otherAssets: 550000,
+  homeLoan: 4800000,
+  otherLoans: 350000,
+  creditCardDues: 40000,
+  lifeCover: 7500000,
+  healthCover: 800000,
+  inflation: 6,
+  preReturn: 11,
+  postReturn: 7,
+};
+
 export interface Ratio {
   key: string;
   label: string;
@@ -326,45 +353,45 @@ export function buildReport(p: ProfileInput): Report {
     detail:
       netWorth > 0
         ? `Your assets of ${inrCompact(totalAssets)} exceed liabilities of ${inrCompact(totalLiabilities)}, leaving a net worth of ${inrCompact(netWorth)}.`
-        : `Your liabilities of ${inrCompact(totalLiabilities)} currently exceed assets of ${inrCompact(totalAssets)}. Focus on clearing high-cost debt first.`,
+        : `Your liabilities of ${inrCompact(totalLiabilities)} currently exceed assets of ${inrCompact(totalAssets)}. High-cost debt is commonly the first thing people look to reduce — a registered adviser can help you plan this.`,
   });
   if (p.creditCardDues > 0)
     insights.push({
       title: "Credit card debt",
       verdict: "alert",
-      headline: "Clear this first",
-      detail: `Credit card dues of ${inrCompact(p.creditCardDues)} carry the highest interest of any borrowing. Prioritise clearing these before new investments.`,
+      headline: "Typically the costliest debt",
+      detail: `Credit card dues of ${inrCompact(p.creditCardDues)} usually carry the highest interest of any borrowing, which is why many planning frameworks treat them as a priority to clear. This is general information, not a recommendation.`,
     });
   insights.push({
     title: "Emergency fund",
     verdict: emergencyFundHave >= emergencyFundTarget ? "good" : emergencyFundHave >= emergencyFundTarget / 2 ? "watch" : "alert",
     headline:
-      emergencyFundHave >= emergencyFundTarget ? "Well cushioned" : "Build your safety net",
-    detail: `A 6-month buffer for you is ${inrCompact(emergencyFundTarget)}. You hold ${inrCompact(emergencyFundHave)} in cash/bank.`,
+      emergencyFundHave >= emergencyFundTarget ? "Well cushioned" : "Below the common buffer range",
+    detail: `A commonly-cited 6-month buffer for your outflow would be ${inrCompact(emergencyFundTarget)}. You hold ${inrCompact(emergencyFundHave)} in cash/bank. The 3–6 month range is a general guideline, not a target that fits everyone.`,
   });
   insights.push({
     title: "Life insurance",
     verdict: lifeCoverGap <= 0 ? "good" : lifeCoverGap < recommendedLifeCover * 0.4 ? "watch" : "alert",
-    headline: lifeCoverGap <= 0 ? "Adequately protected" : "Cover gap detected",
+    headline: lifeCoverGap <= 0 ? "Within the estimated range" : "Below the estimate",
     detail:
       p.dependents > 0
-        ? `With ${p.dependents} dependent(s), an income-replacement estimate suggests about ${inrCompact(recommendedLifeCover)} of term cover. You have ${inrCompact(p.lifeCover)}${lifeCoverGap > 0 ? `, a shortfall of ${inrCompact(lifeCoverGap)}.` : "."}`
-        : `With no dependents, cover mainly needs to clear debts. Estimated need ${inrCompact(recommendedLifeCover)}.`,
+        ? `With ${p.dependents} dependent(s), an income-replacement (Human Life Value) estimate works out to roughly ${inrCompact(recommendedLifeCover)}. You have ${inrCompact(p.lifeCover)}${lifeCoverGap > 0 ? `, about ${inrCompact(lifeCoverGap)} below that estimate.` : "."} The right cover for you depends on factors only a licensed professional can assess.`
+        : `With no dependents, the estimate focuses on covering liabilities — roughly ${inrCompact(recommendedLifeCover)}. Your needs may differ.`,
   });
   insights.push({
     title: "Health insurance",
     verdict: healthCoverGap <= 0 ? "good" : "watch",
-    headline: healthCoverGap <= 0 ? "Sufficient floater" : "Consider topping up",
-    detail: `For a ${p.cityTier} family of ${p.dependents + 1}, a floater near ${inrCompact(recommendedHealthCover)} is prudent. You have ${inrCompact(p.healthCover)}.`,
+    headline: healthCoverGap <= 0 ? "Within the rule-of-thumb range" : "Below the rule-of-thumb range",
+    detail: `For a ${p.cityTier} family of ${p.dependents + 1}, a common rule-of-thumb floater is around ${inrCompact(recommendedHealthCover)}. You have ${inrCompact(p.healthCover)}. Actual adequate cover depends on medical costs and the specific policy.`,
   });
   insights.push({
     title: "Retirement",
     verdict: retirementGap <= 0 ? "good" : retirementGap < retirementCorpusNeeded * 0.5 ? "watch" : "alert",
-    headline: retirementGap <= 0 ? "On track" : "Start a dedicated SIP",
+    headline: retirementGap <= 0 ? "On track in this estimate" : "Gap to the estimate",
     detail:
       retirementGap > 0
-        ? `You'll need about ${inrCompact(retirementCorpusNeeded)} by age ${p.retireAge}. Current retirement savings project to ${inrCompact(retirementProjected)}. Investing ${inrCompact(retirementSIP)}/month can close the gap.`
-        : `Your projected retirement savings of ${inrCompact(retirementProjected)} already meet the estimated need of ${inrCompact(retirementCorpusNeeded)}.`,
+        ? `Under these assumptions, the estimate suggests a corpus of about ${inrCompact(retirementCorpusNeeded)} by age ${p.retireAge}, while your current retirement savings project to ${inrCompact(retirementProjected)}. In this model, investing about ${inrCompact(retirementSIP)}/month would close the gap — illustrative only.`
+        : `Under these assumptions, your projected retirement savings of ${inrCompact(retirementProjected)} already meet the estimated need of ${inrCompact(retirementCorpusNeeded)}.`,
   });
 
   return {

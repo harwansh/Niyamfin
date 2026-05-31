@@ -52,3 +52,24 @@ export function validateProfile(input: ProfileInput): ProfileErrors {
 }
 
 export const hasValidationErrors = (errors: ProfileErrors) => Object.keys(errors).length > 0;
+
+// Non-blocking sanity warnings shown to the user, per field.
+export type ProfileWarnings = Partial<Record<keyof ProfileInput, string>>;
+
+export function warnProfile(input: ProfileInput): ProfileWarnings {
+  const p = sanitizeProfile(input);
+  const w: ProfileWarnings = {};
+  const income = p.salary + p.rentalIncome + p.otherIncome;
+
+  if (income > 0 && p.livingExpenses > income)
+    w.livingExpenses = "Your living expenses are higher than your total income — double-check the figure.";
+  if (income > 0 && p.totalEmi > income)
+    w.totalEmi = "Your EMIs exceed your total income — please confirm this is right.";
+  if (income > 0 && p.totalEmi + p.livingExpenses > income * 1.2)
+    w.totalEmi = w.totalEmi || "EMIs plus expenses are well above your income.";
+  if (p.creditCardDues > 0 && income > 0 && p.creditCardDues > income * 12)
+    w.creditCardDues = "That's a very large card balance relative to income — please confirm.";
+  if (p.salary > 10_000_000) w.salary = "That's an unusually high monthly salary — confirm the amount.";
+
+  return w;
+}

@@ -3,16 +3,17 @@
 import { groupIndian, inWords } from "@/lib/finance";
 
 export function MoneyField({
-  label, value, onChange, hint, max = 1_000_000_000,
-}: { label: string; value: number; onChange: (n: number) => void; hint?: string; max?: number }) {
+  label, value, onChange, hint, max = 1_000_000_000, warning,
+}: { label: string; value: number; onChange: (n: number) => void; hint?: string; max?: number; warning?: string }) {
   const words = inWords(value);
   const tooBig = value > max;
+  const showWarn = !!warning && !tooBig;
   return (
     <div>
       <label className="field-label">{label}</label>
       <div
         className={`flex items-stretch overflow-hidden rounded-xl border bg-white/80 transition focus-within:ring-2 focus-within:ring-sage-400/30 ${
-          tooBig ? "border-clay focus-within:border-clay focus-within:ring-clay/30" : "border-sage-100 focus-within:border-sage-600"
+          tooBig ? "border-clay focus-within:border-clay focus-within:ring-clay/30" : showWarn ? "border-brass focus-within:border-brass" : "border-sage-100 focus-within:border-sage-600"
         }`}
       >
         <span className="flex select-none items-center border-r border-sage-100 bg-sage-50 px-4 text-lg font-semibold text-sage-700">
@@ -38,6 +39,8 @@ export function MoneyField({
       </div>
       {tooBig ? (
         <p className="mt-1 text-xs font-medium text-clay">That looks too large — please check the amount.</p>
+      ) : showWarn ? (
+        <p className="mt-1 text-xs font-medium text-[#8a6d1f]">⚠ {warning}</p>
       ) : (
         hint && <p className="mt-1 text-xs text-sage-600">{hint}</p>
       )}

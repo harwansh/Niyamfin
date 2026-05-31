@@ -1,7 +1,7 @@
 "use client";
 
 import { ProfileInput } from "@/lib/finance";
-import { validateProfile } from "@/lib/validation";
+import { validateProfile, warnProfile } from "@/lib/validation";
 import { ChoiceField, MoneyField, NumField } from "./Fields";
 
 const STEPS = ["About you", "Income", "Expenses & EMIs", "Assets", "Liabilities", "Protection"];
@@ -21,6 +21,7 @@ export default function IntakeForm({
 }) {
   const last = STEPS.length - 1;
   const errors = validateProfile(p);
+  const warnings = warnProfile(p);
 
   const stepBlocked = (() => {
     if (step === 0) return !!errors.retireAge || !!errors.lifeExpectancy;
@@ -76,7 +77,7 @@ export default function IntakeForm({
 
         {step === 1 && (
           <>
-            <MoneyField label="Monthly salary (take-home)" value={p.salary} onChange={(v) => set("salary", v)} />
+            <MoneyField label="Monthly salary (take-home)" value={p.salary} onChange={(v) => set("salary", v)} warning={warnings.salary} />
             <MoneyField label="Monthly rental income" value={p.rentalIncome} onChange={(v) => set("rentalIncome", v)} hint="Rent received, if any." />
             <MoneyField label="Other monthly income" value={p.otherIncome} onChange={(v) => set("otherIncome", v)} hint="Freelance, interest, dividends, etc." />
           </>
@@ -84,8 +85,8 @@ export default function IntakeForm({
 
         {step === 2 && (
           <>
-            <MoneyField label="Monthly living expenses" value={p.livingExpenses} onChange={(v) => set("livingExpenses", v)} hint="Household, food, utilities, lifestyle - excluding EMIs." />
-            <MoneyField label="Total monthly EMIs" value={p.totalEmi} onChange={(v) => set("totalEmi", v)} hint="All loan repayments combined." />
+            <MoneyField label="Monthly living expenses" value={p.livingExpenses} onChange={(v) => set("livingExpenses", v)} hint="Household, food, utilities, lifestyle - excluding EMIs." warning={warnings.livingExpenses} />
+            <MoneyField label="Total monthly EMIs" value={p.totalEmi} onChange={(v) => set("totalEmi", v)} hint="All loan repayments combined." warning={warnings.totalEmi} />
           </>
         )}
 
@@ -105,7 +106,7 @@ export default function IntakeForm({
           <>
             <MoneyField label="Home loan outstanding" value={p.homeLoan} onChange={(v) => set("homeLoan", v)} />
             <MoneyField label="Other loans (car, personal, education)" value={p.otherLoans} onChange={(v) => set("otherLoans", v)} />
-            <MoneyField label="Credit card dues" value={p.creditCardDues} onChange={(v) => set("creditCardDues", v)} hint="Outstanding balance you carry over." />
+            <MoneyField label="Credit card dues" value={p.creditCardDues} onChange={(v) => set("creditCardDues", v)} hint="Outstanding balance you carry over." warning={warnings.creditCardDues} />
           </>
         )}
 
