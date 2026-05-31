@@ -149,7 +149,7 @@ export default function Page() {
     <main className="relative z-10 mx-auto max-w-5xl px-5 pb-24 pt-12 sm:pt-16">
       <header className="mb-9">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sage-700">
-          <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" /> No login · No storage · Private
+          <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" /> No login · No server storage · Private by design
         </div>
         <h1 className="font-display text-5xl font-700 leading-[0.95] tracking-tight text-ink sm:text-7xl">
           Niyam<span className="text-sage-600">fin</span>
@@ -157,7 +157,7 @@ export default function Page() {
         <p className="mt-4 max-w-xl text-lg leading-relaxed text-sage-700">
           {report
             ? "An educational read of your financial health, computed in your browser from the details entered. Estimates only — not financial advice."
-            : "Answer a few questions about your money and get a free educational snapshot of your financial health — net worth, emergency cover, retirement gap, insurance, budget, and goals. Nothing is saved or shared."}
+            : "A private financial-health calculator from Niyam Finance."}
         </p>
         {!report && (
           <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -166,14 +166,14 @@ export default function Page() {
               onClick={() => document.getElementById("intake-form")?.scrollIntoView({ behavior: "smooth" })}
               className="inline-flex items-center gap-2 rounded-xl bg-sage-900 px-6 py-3 text-sm font-bold text-paper shadow-card transition hover:bg-sage-700"
             >
-              Start your free financial health check →
+              Start private checkup →
             </button>
             <button
               type="button"
               onClick={showSample}
               className="inline-flex items-center gap-2 rounded-xl border border-sage-100 bg-white/70 px-4 py-2.5 text-sm font-semibold text-sage-700 transition hover:border-sage-400"
             >
-              👀 See a sample first
+              View sample report
             </button>
           </div>
         )}
@@ -190,7 +190,7 @@ export default function Page() {
             onClick={clearDraft}
             className="text-xs font-semibold text-sage-500 underline underline-offset-2 transition hover:text-clay"
           >
-            Clear and start fresh
+            Clear saved draft
           </button>
         </div>
       )}
@@ -218,6 +218,9 @@ export default function Page() {
         </div>
       )}
 
+      {!report && (
+        <p className="mb-4 text-xs text-sage-600">Your progress may be saved locally on this device. It is not sent to Niyamfin. Use &ldquo;Clear saved draft&rdquo; to remove it.</p>
+      )}
       <section id="intake-form" className="rounded-3xl border border-sage-100 bg-white/50 p-6 shadow-card backdrop-blur-sm sm:p-9">
         {report ? (
           <ReportView report={report} profile={profile} onRestart={restart} />
@@ -234,7 +237,7 @@ export default function Page() {
             {[
               {
                 q: "Is my data saved anywhere?",
-                a: "No. Every calculation runs entirely in your browser. Nothing you enter is sent to any server, stored in a database, or shared with anyone. When you close the tab, the data is gone — except for your draft, which is saved only on your own device in browser storage and never leaves it.",
+                a: "Your financial inputs are not sent to our servers. In-progress drafts may be saved locally on your device.",
               },
               {
                 q: "Is this financial advice?",
@@ -272,10 +275,7 @@ export default function Page() {
           <Link href="/contact" className="transition hover:text-sage-900">Contact</Link>
         </nav>
         <p className="mx-auto max-w-2xl text-xs leading-relaxed text-sage-600">
-          Niyamfin gives educational estimates based on standard personal-finance formulas and the details you enter. It
-          is not financial, investment, insurance, or tax advice, and does not recommend any product or action. Verify
-          with a SEBI-registered investment adviser or qualified professional before acting. All calculations run in your
-          browser; nothing is stored.
+          © 2026 Niyam Finance. Niyamfin is an educational financial-health calculator. Not financial advice. All calculations run in your browser; financial inputs are processed in your browser and are not stored on Niyamfin servers.
         </p>
       </footer>
     </main>

@@ -5,6 +5,10 @@ export const metadata = { title: "Terms of Use — Niyamfin" };
 export default function Terms() {
   return (
     <PageShell title="Terms of Use" subtitle="Please read these before relying on anything Niyamfin shows you.">
+      <p>
+        Niyamfin is operated by Niyam Finance. In this policy, &ldquo;Niyamfin,&rdquo; &ldquo;Niyam Finance,&rdquo;
+        &ldquo;we,&rdquo; &ldquo;us,&rdquo; and &ldquo;our&rdquo; refer to the operator of this website and calculator.
+      </p>
       <H2>Educational purpose only</H2>
       <p>
         Niyamfin is provided for general educational and informational purposes. It performs calculations using standard
@@ -39,6 +43,7 @@ export default function Terms() {
         Formulas, benchmarks, and tax-related rules change over time and may contain errors or become outdated. No
         guarantee is made as to accuracy, completeness, or current validity.
       </p>
+      <p className="mt-8 text-xs text-sage-500">Last updated: 31 May 2026</p>
     </PageShell>
   );
 }
