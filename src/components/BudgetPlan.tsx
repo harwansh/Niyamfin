@@ -25,8 +25,8 @@ function CompareRow({
     delta === 0
       ? "On target"
       : delta > 0
-      ? `${inrCompact(delta)} more than suggested`
-      : `${inrCompact(Math.abs(delta))} less than suggested`;
+      ? `${inrCompact(delta)} above general benchmark range`
+      : `${inrCompact(Math.abs(delta))} below general benchmark range`;
 
   return (
     <div className="rounded-2xl border border-sage-100 bg-white/70 p-4">
@@ -45,7 +45,7 @@ function CompareRow({
       {/* recommended bar */}
       <div className="mb-1.5">
         <div className="mb-0.5 flex justify-between text-xs text-sage-600">
-          <span>Suggested</span>
+          <span>Benchmark</span>
           <span className="font-semibold">{inrCompact(recommended)}</span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-sage-100">
@@ -75,10 +75,10 @@ export default function BudgetPlan({ profile }: { profile: ProfileInput }) {
 
   return (
     <div>
-      <h3 className="mb-1 font-display text-xl font-600 text-ink">Your plan vs. reality</h3>
+      <h3 className="mb-1 font-display text-xl font-600 text-ink">Benchmark-based monthly budget snapshot</h3>
       <p className="mb-5 text-sm text-sage-600">
-        Here&apos;s how a healthy split of your {inrCompact(b.income)} monthly income compares with what you actually
-        do — and whether you&apos;re above or below in each area. (Limits: EMIs under 35%, savings 10–20%, the rest for living.)
+        Here&apos;s how a benchmark split of your {inrCompact(b.income)} monthly income compares with what you actually
+        do — and whether you&apos;re above or below in each area. (Benchmarks: EMIs under 35%, savings 10–20%, the rest for living.)
       </p>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -102,8 +102,8 @@ export default function BudgetPlan({ profile }: { profile: ProfileInput }) {
           goodWhen="under"
           note={
             b.actualExpenses > b.suggestedExpenses
-              ? "Spending more than suggested — the biggest lever to free up savings."
-              : "Comfortably within the suggested living budget."
+              ? "Spending above general benchmark range — the biggest lever to free up savings."
+              : "Within general benchmark range for living expenses."
           }
         />
         <CompareRow
@@ -126,7 +126,7 @@ export default function BudgetPlan({ profile }: { profile: ProfileInput }) {
         <strong className="text-ink">In short:</strong>{" "}
         {b.actualSavings < 0
           ? `Your EMIs and expenses exceed your income by ${inr(Math.abs(b.actualSavings))} a month. Trimming expenses or reducing debt is the first priority.`
-          : `You have about ${inr(b.actualSavings)} a month after EMIs and expenses, versus a suggested savings target of ${inr(b.targetSavings)} — a ${b.actualSavings >= b.targetSavings ? "surplus" : "shortfall"} of ${inr(Math.abs(b.actualSavings - b.targetSavings))}.`}
+          : `You have about ${inr(b.actualSavings)} a month after EMIs and expenses, versus a benchmark savings target of ${inr(b.targetSavings)} — a ${b.actualSavings >= b.targetSavings ? "surplus" : "shortfall"} of ${inr(Math.abs(b.actualSavings - b.targetSavings))}.`}
       </div>
     </div>
   );

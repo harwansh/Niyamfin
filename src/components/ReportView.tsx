@@ -399,7 +399,14 @@ export default function ReportView({
         <UpgradeSignup />
       </Section>
 
-      <div className="flex justify-center pt-2">
+      <div className="flex flex-wrap justify-center gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onRestart}
+          className="rounded-xl border border-sage-100 bg-white/70 px-6 py-2.5 text-sm font-medium text-sage-700 transition hover:border-sage-400"
+        >
+          ✎ Edit inputs
+        </button>
         <button
           type="button"
           onClick={onRestart}

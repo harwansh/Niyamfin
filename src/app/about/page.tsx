@@ -6,10 +6,13 @@ export default function About() {
   return (
     <PageShell title="About Niyamfin" subtitle="A private, no-login space to understand your money — not to be sold anything.">
       <p>
-        Niyamfin is a free educational tool that reads your overall financial picture and explains it in plain language.
+        Niyamfin is a financial-health calculator created by Niyam Finance. The website uses the shorter name
+        &ldquo;Niyamfin&rdquo; because the domain is niyamfin.com, while the broader company/operator name is Niyam Finance.
+      </p>
+      <p>
         You answer a few questions about your income, spending, assets, debts, and protection, and the tool shows you
-        widely-used indicators — net worth, key financial ratios, retirement readiness, insurance gaps, a suggested
-        monthly budget, and goal planning.
+        widely-used indicators — net worth, key financial ratios, retirement readiness, illustrative protection gap, a
+        benchmark-based monthly budget snapshot, and goal planning.
       </p>
       <H2>What it is</H2>
       <p>
@@ -23,11 +26,18 @@ export default function About() {
         policy, or transaction. It does not know your full circumstances, and it cannot replace a conversation with a
         qualified, registered professional who can account for your complete situation.
       </p>
-      <H2>Why &ldquo;no storage&rdquo;</H2>
+      <H2>Privacy by design</H2>
       <p>
-        Your financial details are sensitive. Niyamfin is built so that nothing you type is saved, transmitted, or
-        logged — the moment you close or refresh the page, it is gone. There is no account, no database, and no tracking.
+        Your financial details are sensitive. Financial inputs are processed in your browser and are not stored on
+        Niyamfin servers. In-progress drafts may be saved locally on your device for convenience; they are not
+        transmitted anywhere.
       </p>
+      <H2>Who operates Niyamfin</H2>
+      <p>Operated by: Niyam Finance</p>
+      <p>Founder: Harwansh Tiwari</p>
+      <p>Location: India</p>
+      <p>Contact: <a href="mailto:hello@niyamfin.com" className="text-sage-700 underline">hello@niyamfin.com</a></p>
+      <p className="mt-8 text-xs text-sage-500">Last updated: 31 May 2026</p>
     </PageShell>
   );
 }

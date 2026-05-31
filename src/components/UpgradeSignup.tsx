@@ -28,7 +28,7 @@ export default function UpgradeSignup() {
       // No endpoint configured — treat as success (dev/preview mode)
       setStatus("done");
     } catch {
-      setErrorMsg("Something went wrong. Please try again or email us at Hello@niyamfin.com.");
+      setErrorMsg("Something went wrong. Please try again or email us at hello@niyamfin.com.");
       setStatus("error");
     }
   }

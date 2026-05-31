@@ -26,10 +26,7 @@ export function SiteFooter() {
         <Link href="/contact" className="transition hover:text-sage-900">Contact</Link>
       </nav>
       <p className="mt-4 text-xs leading-relaxed text-sage-600">
-        Niyamfin provides educational estimates based on standard personal-finance principles. It is not financial,
-        investment, insurance, or tax advice, and using it does not create an advisory relationship. Verify any decision
-        with a SEBI-registered investment adviser or a qualified professional. All calculations run in your browser; no
-        data is collected or stored.
+        © 2026 Niyam Finance. Niyamfin is an educational financial-health calculator. Not financial, investment, insurance, or tax advice. Financial inputs are processed in your browser and are not stored on Niyamfin servers.
       </p>
     </footer>
   );
