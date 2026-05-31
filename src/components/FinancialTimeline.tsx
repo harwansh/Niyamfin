@@ -37,7 +37,7 @@ export default function FinancialTimeline({
 
       {/* Horizontal bar timeline */}
       <div className="mb-6 overflow-x-auto">
-        <div className="relative min-w-[320px] pb-8 pt-4">
+        <div className="relative min-w-[420px] pb-8 pt-4">
           {/* Base line */}
           <div className="absolute left-0 right-0 top-7 h-0.5 bg-sage-100" />
 
@@ -45,17 +45,23 @@ export default function FinancialTimeline({
           <div className="relative flex items-start">
             {milestones.map((m, i) => {
               const pct = maxYears > 0 ? (m.yearsFromNow / maxYears) * 100 : 0;
+              const clampedPct = Math.min(95, pct);
               const colors = VERDICT_COLORS[m.verdict];
+              // Shift label so it never bleeds outside the bar
+              const labelShift = clampedPct < 15 ? "0%" : clampedPct > 80 ? "-100%" : "-50%";
               return (
                 <div
                   key={i}
                   className="absolute"
-                  style={{ left: `${Math.min(95, pct)}%` }}
+                  style={{ left: `${clampedPct}%` }}
                 >
                   {/* Dot */}
                   <div className={`h-4 w-4 rounded-full border-2 border-white shadow ${colors.dot}`} />
                   {/* Label below */}
-                  <div className={`mt-5 w-28 -translate-x-1/2 text-center text-[11px] font-semibold leading-tight ${colors.text}`}>
+                  <div
+                    className={`mt-5 w-28 text-[11px] font-semibold leading-tight ${colors.text}`}
+                    style={{ transform: `translateX(${labelShift})` }}
+                  >
                     {TYPE_ICONS[m.type]} {m.label}
                     <div className="mt-0.5 text-[10px] font-normal text-sage-500">
                       {m.yearsFromNow === 0 ? "Now" : `~${m.yearsFromNow < 1 ? "<1 yr" : `${m.calendarYear}`}`}
