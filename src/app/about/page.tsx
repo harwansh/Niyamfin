@@ -37,6 +37,7 @@ export default function About() {
       <p>Founder: Harwansh Tiwari</p>
       <p>Location: India</p>
       <p>Contact: <a href="mailto:hello@niyamfin.com" className="text-sage-700 underline">hello@niyamfin.com</a></p>
+      <p className="text-sm text-sage-600 italic">Niyam Finance is a brand/project name. It is not a SEBI-registered investment adviser, research analyst, insurance intermediary, or distributor.</p>
       <p className="mt-8 text-xs text-sage-500">Last updated: 31 May 2026</p>
     </PageShell>
   );

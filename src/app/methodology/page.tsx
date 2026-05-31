@@ -33,9 +33,8 @@ export default function Methodology() {
       <p>
         These follow commonly-taught personal-finance benchmarks: <strong>Liquidity ratio</strong> (liquid assets ÷ total
         assets, commonly cited around 15%); <strong>Emergency cover</strong> (liquid assets ÷ monthly outflow, commonly
-        3–6 months); <strong>Debt-to-asset</strong> (liabilities ÷ assets, commonly kept below 50%); <strong>EMI-to-income</strong>
-        (EMIs ÷ income, commonly kept below 35%); and <strong>Savings ratio</strong> (monthly surplus ÷ income, commonly
-        at least 10%). These are general rules of thumb, not limits that apply to everyone.
+        3–6 months); <strong>Debt-to-asset</strong> (liabilities ÷ assets, commonly kept below 50%); <strong>EMI-to-income ratio</strong> (EMIs ÷ income, commonly kept below 35%); and <strong>Savings ratio</strong> (monthly surplus ÷ income, commonly
+        at least 10%). These are simplified educational rules of thumb, not regulatory or professional standards, and not limits that apply to everyone.
       </p>
 
       <H2>Retirement corpus</H2>
@@ -109,6 +108,10 @@ export default function Methodology() {
 
       <p className="rounded-xl border border-sage-100 bg-sage-50/60 px-4 py-3 text-sm text-sage-700">
         These formulas are educational estimates only. They are not financial, investment, insurance, tax, or legal advice.
+      </p>
+
+      <p className="text-sm text-sage-600">
+        <strong>Basis:</strong> These benchmarks are commonly cited in personal-finance education and planning literature. They are not mandated by any regulator and may not suit every individual situation. Always verify with a qualified professional.
       </p>
 
       <p className="mt-8 text-xs text-sage-500">Last updated: 31 May 2026</p>

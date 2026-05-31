@@ -71,7 +71,7 @@ export default function IntakeForm({
         {STEPS[step]}
       </h2>
       <p className="mb-6 text-sm text-sage-600">
-        Step {step + 1} of {STEPS.length} — {STEP_DESCRIPTIONS[step]}
+        Step {step + 1} of {STEPS.length} — {STEP_DESCRIPTIONS[step]}{step === 0 ? " Takes 3–5 minutes." : ""}
       </p>
 
       <div key={step} className="rise space-y-5" aria-labelledby="step-heading">
@@ -100,6 +100,7 @@ export default function IntakeForm({
 
         {step === 1 && (
           <fieldset className="contents" aria-label="Monthly income">
+            <p className="mb-4 text-xs text-sage-600 rounded-lg bg-sage-50/60 px-3 py-2 border border-sage-100">Used only to calculate ratios and estimates in your browser. Not sent anywhere.</p>
             <MoneyField label="Monthly salary (take-home)" value={p.salary} onChange={(v) => set("salary", v)} warning={warnings.salary} />
             <MoneyField label="Monthly rental income" value={p.rentalIncome} onChange={(v) => set("rentalIncome", v)} hint="Rent received, if any." />
             <MoneyField label="Other monthly income" value={p.otherIncome} onChange={(v) => set("otherIncome", v)} hint="Freelance, interest, dividends, etc." />
@@ -115,6 +116,7 @@ export default function IntakeForm({
 
         {step === 3 && (
           <fieldset className="contents" aria-label="Assets">
+            <p className="mb-4 text-xs text-sage-600 rounded-lg bg-sage-50/60 px-3 py-2 border border-sage-100">Used to estimate your net worth and emergency cover. Not sent anywhere.</p>
             <MoneyField label="Cash & bank balance" value={p.cashAndBank} onChange={(v) => set("cashAndBank", v)} />
             <MoneyField label="Investments (stocks, MF, bonds)" value={p.investments} onChange={(v) => set("investments", v)} />
             <MoneyField label="Retirement savings (EPF, PPF, NPS)" value={p.retirementSavings} onChange={(v) => set("retirementSavings", v)} />
@@ -127,6 +129,7 @@ export default function IntakeForm({
 
         {step === 4 && (
           <fieldset className="contents" aria-label="Liabilities">
+            <p className="mb-4 text-xs text-sage-600 rounded-lg bg-sage-50/60 px-3 py-2 border border-sage-100">Used to calculate debt ratios and net worth. Not sent anywhere.</p>
             <MoneyField label="Home loan outstanding" value={p.homeLoan} onChange={(v) => set("homeLoan", v)} />
             <MoneyField label="Other loans (car, personal, education)" value={p.otherLoans} onChange={(v) => set("otherLoans", v)} />
             <MoneyField label="Credit card dues" value={p.creditCardDues} onChange={(v) => set("creditCardDues", v)} hint="Outstanding balance you carry over." warning={warnings.creditCardDues} />
@@ -135,6 +138,7 @@ export default function IntakeForm({
 
         {step === 5 && (
           <fieldset className="contents" aria-label="Protection and assumptions">
+            <p className="mb-4 text-xs text-sage-600 rounded-lg bg-sage-50/60 px-3 py-2 border border-sage-100">Used to estimate your insurance coverage gap. Not sent anywhere.</p>
             <MoneyField label="Existing life insurance cover" value={p.lifeCover} onChange={(v) => set("lifeCover", v)} hint="Total term/life sum assured." />
             <MoneyField label="Existing health insurance cover" value={p.healthCover} onChange={(v) => set("healthCover", v)} hint="Family floater amount." />
             <div className="rounded-xl border border-sage-100 bg-white/60 p-4">
