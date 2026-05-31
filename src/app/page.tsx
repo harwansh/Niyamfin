@@ -1,17 +1,102 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import IntakeForm from "@/components/IntakeForm";
 import ReportView from "@/components/ReportView";
 import { buildReport, defaultProfile, ProfileInput, Report, sampleProfile } from "@/lib/finance";
 import { hasValidationErrors, sanitizeProfile, validateProfile } from "@/lib/validation";
 
+const DRAFT_KEY = "niyamfin-draft";
+
+function encodeProfle(p: ProfileInput): string {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+}
+
+function decodeProfile(s: string): ProfileInput | null {
+  try {
+    return sanitizeProfile({ ...defaultProfile, ...JSON.parse(decodeURIComponent(escape(atob(s)))) });
+  } catch {
+    return null;
+  }
+}
+
+function CopyLinkButton({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // fallback for browsers without clipboard API
+      const el = document.createElement("textarea");
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="inline-flex items-center gap-2 rounded-xl border border-sage-100 bg-white/70 px-4 py-2 text-sm font-semibold text-sage-700 transition hover:border-sage-400"
+    >
+      {copied ? "✓ Copied!" : "🔗 Copy shareable link"}
+    </button>
+  );
+}
+
 export default function Page() {
   const [profile, setProfile] = useState<ProfileInput>(defaultProfile);
   const [step, setStep] = useState(0);
   const [report, setReport] = useState<Report | null>(null);
   const [isSample, setIsSample] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const skipSave = useRef(true); // don't overwrite localStorage on the initial mount restore
+
+  // On mount: load from URL hash (shared link) or localStorage (draft)
+  useEffect(() => {
+    try {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        const p = decodeProfile(hash);
+        if (p) {
+          setProfile(p);
+          skipSave.current = false;
+          const errors = validateProfile(p);
+          if (!hasValidationErrors(errors)) {
+            setReport(buildReport(p));
+            setShareUrl(`${window.location.origin}${window.location.pathname}#${hash}`);
+          }
+          return;
+        }
+      }
+    } catch {}
+
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const p = sanitizeProfile({ ...defaultProfile, ...JSON.parse(saved) });
+        setProfile(p);
+        setDraftRestored(true);
+      }
+    } catch {}
+
+    skipSave.current = false;
+  }, []);
+
+  // Auto-save profile to localStorage on every change (after initial load)
+  useEffect(() => {
+    if (skipSave.current) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(profile));
+    } catch {}
+  }, [profile]);
 
   const set = <K extends keyof ProfileInput>(k: K, v: ProfileInput[K]) =>
     setProfile((s) => ({ ...s, [k]: v }));
@@ -23,27 +108,48 @@ export default function Page() {
     setProfile(cleanProfile);
     setReport(buildReport(cleanProfile));
     setIsSample(false);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    setDraftRestored(false);
+    try {
+      const encoded = encodeProfle(cleanProfile);
+      setShareUrl(`${window.location.origin}${window.location.pathname}#${encoded}`);
+      window.history.replaceState(null, "", `#${encoded}`);
+    } catch {}
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
   function showSample() {
     setProfile(sampleProfile);
     setReport(buildReport(sampleProfile));
     setIsSample(true);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    setShareUrl("");
+    window.history.replaceState(null, "", window.location.pathname);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
   function restart() {
     setReport(null);
     setIsSample(false);
+    setShareUrl("");
+    setDraftRestored(false);
     setProfile(defaultProfile);
     setStep(0);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    window.history.replaceState(null, "", window.location.pathname);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    setDraftRestored(false);
+    setProfile(defaultProfile);
+    setStep(0);
   }
 
   return (
     <main className="relative z-10 mx-auto max-w-5xl px-5 pb-24 pt-12 sm:pt-16">
       <header className="mb-9">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sage-700">
-          <span className="h-1.5 w-1.5 rounded-full bg-brass" /> No login · No storage · Private
+          <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" /> No login · No storage · Private
         </div>
         <h1 className="font-display text-5xl font-700 leading-[0.95] tracking-tight text-ink sm:text-7xl">
           Niyam<span className="text-sage-600">fin</span>
@@ -55,6 +161,7 @@ export default function Page() {
         </p>
         {!report && (
           <button
+            type="button"
             onClick={showSample}
             className="mt-5 inline-flex items-center gap-2 rounded-xl border border-sage-100 bg-white/70 px-4 py-2.5 text-sm font-semibold text-sage-700 transition hover:border-sage-400"
           >
@@ -63,14 +170,42 @@ export default function Page() {
         )}
       </header>
 
+      {/* Draft restored notice */}
+      {draftRestored && !report && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sage-100 bg-white/60 px-5 py-3" role="status">
+          <p className="text-sm text-sage-700">
+            <strong>Draft restored.</strong> Your previously entered figures have been loaded from this device.
+          </p>
+          <button
+            type="button"
+            onClick={clearDraft}
+            className="text-xs font-semibold text-sage-500 underline underline-offset-2 transition hover:text-clay"
+          >
+            Clear and start fresh
+          </button>
+        </div>
+      )}
+
+      {/* Sample report notice */}
       {isSample && (
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brass/40 bg-[#f6efd9]/60 px-5 py-3">
           <p className="text-sm font-medium text-[#8a6d1f]">
             This is a <strong>sample report</strong> using made-up figures, so you can see what you&apos;ll get. None of these numbers are yours.
           </p>
-          <button onClick={restart} className="rounded-lg bg-sage-900 px-4 py-2 text-sm font-semibold text-paper transition hover:bg-sage-700">
+          <button type="button" onClick={restart} className="rounded-lg bg-sage-900 px-4 py-2 text-sm font-semibold text-paper transition hover:bg-sage-700">
             Start mine →
           </button>
+        </div>
+      )}
+
+      {/* Share link banner (only for user's own report) */}
+      {report && !isSample && shareUrl && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sage-100 bg-white/60 px-5 py-3">
+          <div>
+            <p className="text-sm font-semibold text-ink">Bookmark or share this scenario</p>
+            <p className="text-xs text-sage-600">The link encodes your inputs — no data leaves your device or our servers.</p>
+          </div>
+          <CopyLinkButton url={shareUrl} />
         </div>
       )}
 
@@ -83,7 +218,7 @@ export default function Page() {
       </section>
 
       <footer className="mt-10 space-y-4 text-center">
-        <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs font-medium text-sage-600">
+        <nav aria-label="Site links" className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs font-medium text-sage-600">
           <Link href="/about" className="transition hover:text-sage-900">About</Link>
           <Link href="/methodology" className="transition hover:text-sage-900">Methodology</Link>
           <Link href="/privacy" className="transition hover:text-sage-900">Privacy</Link>
