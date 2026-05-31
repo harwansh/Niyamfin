@@ -390,6 +390,7 @@ export interface Ratio {
   ideal: string;
   verdict: Verdict;
   note: string;
+  interpretation: string; // plain-language sentence about *your* specific value
 }
 
 export interface Insight {
@@ -398,6 +399,13 @@ export interface Insight {
   headline: string;
   detail: string;
   steps: string[]; // 2-3 actionable next steps
+}
+
+export interface FocusArea {
+  rank: number;
+  title: string;
+  why: string;
+  verdict: Verdict;
 }
 
 export interface Report {
@@ -420,6 +428,7 @@ export interface Report {
   emergencyFundTarget: number;
   emergencyFundHave: number;
   insights: Insight[];
+  focusAreas: FocusArea[];
   assetBreakdown: { name: string; value: number }[];
   liabilityBreakdown: { name: string; value: number }[];
 }
@@ -444,6 +453,12 @@ export function buildReport(p: ProfileInput): Report {
   const debtServiceRatio = monthlyIncome > 0 ? (p.totalEmi / monthlyIncome) * 100 : 0;
   const savingsRatio = monthlyIncome > 0 ? (monthlySurplus / monthlyIncome) * 100 : 0;
 
+  const liquidityVerdict: Verdict = liquidityRatio >= 12 && liquidityRatio <= 25 ? "good" : liquidityRatio < 8 ? "alert" : "watch";
+  const jobCoverVerdict: Verdict = jobCoverMonths >= 6 ? "good" : jobCoverMonths >= 3 ? "watch" : "alert";
+  const debtAssetVerdict: Verdict = debtAssetRatio < 50 ? "good" : debtAssetRatio < 65 ? "watch" : "alert";
+  const debtServiceVerdict: Verdict = debtServiceRatio < 35 ? "good" : debtServiceRatio <= 45 ? "watch" : "alert";
+  const savingsVerdict: Verdict = savingsRatio >= 20 ? "good" : savingsRatio >= 10 ? "watch" : "alert";
+
   const ratios: Ratio[] = [
     {
       key: "liquidity",
@@ -451,8 +466,14 @@ export function buildReport(p: ProfileInput): Report {
       value: liquidityRatio,
       unit: "%",
       ideal: "≈ 15% of assets",
-      verdict: liquidityRatio >= 12 && liquidityRatio <= 25 ? "good" : liquidityRatio < 8 ? "alert" : "watch",
+      verdict: liquidityVerdict,
       note: "Share of your wealth that's easy to access. Too low is risky; too high means idle money.",
+      interpretation:
+        liquidityVerdict === "good"
+          ? `${pct(liquidityRatio)} of your assets are liquid — within the commonly cited 12–25% range. Your wealth is accessible when needed without being mostly idle.`
+          : liquidityVerdict === "alert"
+          ? `Only ${pct(liquidityRatio)} of your assets are easily accessible. If an emergency arose, converting property or retirement savings to cash quickly could be difficult.`
+          : `${pct(liquidityRatio)} of your assets are liquid. This is slightly outside the 12–25% range — consider whether you have enough accessible funds for unexpected needs.`,
     },
     {
       key: "jobcover",
@@ -460,8 +481,14 @@ export function buildReport(p: ProfileInput): Report {
       value: jobCoverMonths,
       unit: "months",
       ideal: "3 – 6 months",
-      verdict: jobCoverMonths >= 6 ? "good" : jobCoverMonths >= 3 ? "watch" : "alert",
+      verdict: jobCoverVerdict,
       note: "How many months your liquid savings can cover expenses if income stops.",
+      interpretation:
+        jobCoverVerdict === "good"
+          ? `Your liquid savings cover ${jobCoverMonths.toFixed(1)} months of expenses — at or above the commonly cited 3–6 month benchmark. A job loss or medical event is unlikely to immediately strain your finances.`
+          : jobCoverVerdict === "watch"
+          ? `Your liquid savings cover ${jobCoverMonths.toFixed(1)} months of expenses. The common guideline is 3–6 months — you're in range but building this a little more would add resilience.`
+          : `Your liquid savings cover only ${jobCoverMonths.toFixed(1)} months of expenses. The common guideline is 3–6 months — a job loss or unexpected expense today could create immediate financial pressure.`,
     },
     {
       key: "debtasset",
@@ -469,8 +496,14 @@ export function buildReport(p: ProfileInput): Report {
       value: debtAssetRatio,
       unit: "%",
       ideal: "below 50%",
-      verdict: debtAssetRatio < 50 ? "good" : debtAssetRatio < 65 ? "watch" : "alert",
+      verdict: debtAssetVerdict,
       note: "What portion of everything you own is funded by debt.",
+      interpretation:
+        debtAssetVerdict === "good"
+          ? `${pct(debtAssetRatio)} of your assets are debt-funded — below the 50% guideline. You own the majority of what you have outright.`
+          : debtAssetVerdict === "watch"
+          ? `${pct(debtAssetRatio)} of your assets are debt-funded. This is above the 50% guideline, meaning more than half of what you own is effectively owed to lenders.`
+          : `${pct(debtAssetRatio)} of your assets are debt-funded — a high level that can limit financial flexibility and increase vulnerability to income shocks.`,
     },
     {
       key: "debtservice",
@@ -478,8 +511,14 @@ export function buildReport(p: ProfileInput): Report {
       value: debtServiceRatio,
       unit: "%",
       ideal: "below 35%",
-      verdict: debtServiceRatio < 35 ? "good" : debtServiceRatio <= 45 ? "watch" : "alert",
+      verdict: debtServiceVerdict,
       note: "Share of income going to loan EMIs. Above 45% is a serious concern.",
+      interpretation:
+        debtServiceVerdict === "good"
+          ? `${pct(debtServiceRatio)} of your income goes to EMIs — below the 35% guideline. This leaves healthy room for savings and living expenses.`
+          : debtServiceVerdict === "watch"
+          ? `${pct(debtServiceRatio)} of your income goes to EMIs — above the 35% guideline. Taking on additional debt or a drop in income could put pressure on your cash flow.`
+          : `${pct(debtServiceRatio)} of your income is committed to EMIs. At this level, there is limited room for savings or unexpected costs, and new borrowing could become unmanageable.`,
     },
     {
       key: "savings",
@@ -487,8 +526,16 @@ export function buildReport(p: ProfileInput): Report {
       value: savingsRatio,
       unit: "%",
       ideal: "at least 10%",
-      verdict: savingsRatio >= 20 ? "good" : savingsRatio >= 10 ? "watch" : "alert",
+      verdict: savingsVerdict,
       note: "Share of income left after expenses and EMIs — fuel for every goal.",
+      interpretation:
+        savingsVerdict === "good"
+          ? `You save ${pct(savingsRatio)} of your income — at or above the 20% healthy target. This gives you strong capacity to build wealth and reach your goals.`
+          : savingsVerdict === "watch"
+          ? `You save ${pct(savingsRatio)} of your income. This meets the 10% floor but falls short of the 20% target — there is room to grow your wealth-building capacity.`
+          : savingsRatio <= 0
+          ? `Your expenses exceed your income, leaving nothing to save. This needs attention before any other financial goal can progress.`
+          : `You save ${pct(savingsRatio)} of your income — below the 10% floor. Most financial goals will be difficult to reach without freeing up more cash.`,
     },
   ];
 
@@ -532,6 +579,30 @@ export function buildReport(p: ProfileInput): Report {
   // --- Emergency fund ---
   const emergencyFundTarget = monthlyExpenseForCover * 6;
   const emergencyFundHave = p.cashAndBank;
+
+  // --- Top 3 focus areas (derived from worst-verdict items, ranked by impact) ---
+  const focusCandidates: (FocusArea & { score: number })[] = [];
+
+  if (p.creditCardDues > 0)
+    focusCandidates.push({ rank: 0, title: "Clear credit card dues", why: `Credit card interest (often 30–42% p.a.) erodes wealth faster than almost any investment can grow it. Clearing the ${inrCompact(p.creditCardDues)} balance is typically the highest-return move available.`, verdict: "alert", score: 100 });
+
+  if (jobCoverVerdict !== "good")
+    focusCandidates.push({ rank: 0, title: "Build your emergency fund", why: `Your liquid savings cover ${jobCoverMonths.toFixed(1)} months of expenses — below the commonly cited 3–6 month range. Without this buffer, any income disruption could force you into costly debt.`, verdict: jobCoverVerdict, score: jobCoverVerdict === "alert" ? 90 : 60 });
+
+  if (debtServiceVerdict !== "good")
+    focusCandidates.push({ rank: 0, title: "Reduce EMI burden", why: `${pct(debtServiceRatio)} of your income goes to EMIs — above the 35% guideline. High debt commitments leave little room to save or respond to surprises.`, verdict: debtServiceVerdict, score: debtServiceVerdict === "alert" ? 85 : 55 });
+
+  if (savingsVerdict !== "good")
+    focusCandidates.push({ rank: 0, title: "Increase monthly savings rate", why: `At ${pct(savingsRatio)}, your savings rate is below the 10% floor. Every financial goal — retirement, property, education — depends on consistently saving a portion of income.`, verdict: savingsVerdict, score: savingsVerdict === "alert" ? 80 : 50 });
+
+  if (retirementGap > retirementCorpusNeeded * 0.3)
+    focusCandidates.push({ rank: 0, title: "Start (or increase) retirement SIP", why: `Your retirement savings project to ${inrCompact(retirementProjected)} against an estimated need of ${inrCompact(retirementCorpusNeeded)}. An SIP of about ${inrCompact(retirementSIP)}/mo could close the gap (illustrative estimate).`, verdict: retirementGap > retirementCorpusNeeded * 0.6 ? "alert" : "watch", score: retirementGap > retirementCorpusNeeded * 0.6 ? 75 : 45 });
+
+  if (lifeCoverGap > 0 && p.dependents > 0)
+    focusCandidates.push({ rank: 0, title: "Review life insurance cover", why: `Based on a Human Life Value estimate, you may be ${inrCompact(lifeCoverGap)} short of adequate cover. A term plan could close this gap cost-effectively.`, verdict: lifeCoverGap > recommendedLifeCover * 0.5 ? "alert" : "watch", score: 40 });
+
+  focusCandidates.sort((a, b) => b.score - a.score);
+  const focusAreas: FocusArea[] = focusCandidates.slice(0, 3).map((f, i) => ({ ...f, rank: i + 1 }));
 
   // --- Narrative insights with actionable steps ---
   const insights: Insight[] = [];
@@ -674,6 +745,7 @@ export function buildReport(p: ProfileInput): Report {
     emergencyFundTarget,
     emergencyFundHave,
     insights,
+    focusAreas,
     assetBreakdown: [
       { name: "Cash & bank", value: p.cashAndBank },
       { name: "Investments", value: p.investments },
