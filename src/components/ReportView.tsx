@@ -29,7 +29,7 @@ const ASSET_COLORS = ["#6f8f72", "#3f5d44", "#c8a248", "#2f4634", "#b9543f"];
 const LIAB_COLORS = ["#b9543f", "#c8a248", "#8a3527"];
 
 function Gauge({ value, max, color }: { value: number; max: number; color: string }) {
-  const pctVal = Math.min(100, (value / max) * 100);
+  const pctVal = max === 0 ? 0 : Math.min(100, (value / max) * 100);
   return (
     <ResponsiveContainer width="100%" height={88}>
       <RadialBarChart innerRadius="72%" outerRadius="100%" data={[{ v: pctVal }]} startAngle={210} endAngle={-30}>
