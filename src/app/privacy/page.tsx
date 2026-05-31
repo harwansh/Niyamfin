@@ -13,8 +13,11 @@ export default function Privacy() {
       </p>
       <H2>Storage</H2>
       <p>
-        Niyamfin does not use cookies, local storage, or any browser storage to save your inputs. We do not build a
-        profile of you and we have nothing to sell, share, or lose in a breach because we hold none of your data.
+        Niyamfin does not use cookies and does not send your financial inputs to any server or database. To improve your
+        experience, your in-progress form inputs are saved as a temporary draft in your own browser&apos;s local storage
+        (on your device only). This draft is never transmitted anywhere and is automatically cleared when you start over.
+        If you sign up for product updates, only your email address is sent to our mailing-list provider — your financial
+        inputs are never linked to it. We do not build a profile of you.
       </p>
       <H2>Analytics and tracking</H2>
       <p>

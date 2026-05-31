@@ -9,7 +9,7 @@ import { hasValidationErrors, sanitizeProfile, validateProfile } from "@/lib/val
 
 const DRAFT_KEY = "niyamfin-draft";
 
-function encodeProfle(p: ProfileInput): string {
+function encodeProfile(p: ProfileInput): string {
   return btoa(unescape(encodeURIComponent(JSON.stringify(p))));
 }
 
@@ -110,7 +110,7 @@ export default function Page() {
     setIsSample(false);
     setDraftRestored(false);
     try {
-      const encoded = encodeProfle(cleanProfile);
+      const encoded = encodeProfile(cleanProfile);
       setShareUrl(`${window.location.origin}${window.location.pathname}#${encoded}`);
       window.history.replaceState(null, "", `#${encoded}`);
     } catch {}

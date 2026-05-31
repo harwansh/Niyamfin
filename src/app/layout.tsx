@@ -5,6 +5,21 @@ export const metadata: Metadata = {
   title: "Niyamfin — Financial Health Portal",
   description:
     "A free, private, no-login educational tool that reads your overall financial health — net worth, ratios, retirement, insurance gaps, budget, and goals. Nothing is stored. Not financial advice.",
+  openGraph: {
+    title: "Niyamfin — Free Financial Health Check",
+    description:
+      "Get a private, browser-only snapshot of your financial health — net worth, emergency cover, retirement gap, insurance, and goals. No login. Nothing saved.",
+    url: "https://niyamfin.com",
+    siteName: "Niyamfin",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Niyamfin — Free Financial Health Check",
+    description:
+      "Private, browser-only financial health snapshot. Net worth, retirement gap, insurance check, goals — computed instantly. No login. Nothing stored.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
