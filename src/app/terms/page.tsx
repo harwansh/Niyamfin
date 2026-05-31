@@ -7,7 +7,7 @@ export default function Terms() {
     <PageShell title="Terms of Use" subtitle="Please read these before relying on anything Niyamfin shows you.">
       <p>
         Niyamfin is operated by Niyam Finance. In these Terms, &ldquo;Niyamfin,&rdquo; &ldquo;Niyam Finance,&rdquo;
-        &ldquo;we,&rdquo; &ldquo;us,&rdquo; and &ldquo;our&rdquo; refer to the operator of this website and calculator.
+        &ldquo;we,&rdquo; &ldquo;us,&rdquo; and &ldquo;our&rdquo; refer to the operator of this website and calculator. Niyam Finance is a brand/project name and is not a SEBI-registered investment adviser, research analyst, insurance intermediary, or distributor.
       </p>
       <H2>Educational purpose only</H2>
       <p>

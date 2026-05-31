@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Niyamfin — a private financial-health calculator from Niyam Finance",
+  title: "Niyamfin — Private Financial Health Calculator for India",
   description:
-    "A free, private, no-login educational calculator from Niyam Finance — net worth, ratios, retirement readiness, illustrative protection gap, budget, and goals. Financial inputs are not stored on our servers. Not financial advice.",
+    "Estimate your net worth, emergency fund, debt ratios, insurance gap, and retirement readiness privately in your browser. No login. No financial inputs stored on our servers. Not financial advice.",
   openGraph: {
-    title: "Niyamfin — Free Financial Health Check",
+    title: "Niyamfin — Private Financial Health Calculator for India",
     description:
       "Get a private, browser-only snapshot of your financial health — net worth, emergency cover, retirement gap, insurance, and goals. No login. Nothing saved.",
     url: "https://niyamfin.com",

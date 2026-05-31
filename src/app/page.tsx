@@ -21,6 +21,24 @@ function decodeProfile(s: string): ProfileInput | null {
   }
 }
 
+function ClearDraftButton({ onClear }: { onClear: () => void }) {
+  const [cleared, setCleared] = useState(false);
+  function handleClear() {
+    onClear();
+    setCleared(true);
+    setTimeout(() => setCleared(false), 3000);
+  }
+  return (
+    <button
+      type="button"
+      onClick={handleClear}
+      className="text-xs font-semibold text-sage-500 underline underline-offset-2 transition hover:text-clay"
+    >
+      {cleared ? "✓ Draft cleared from this device." : "Clear saved draft"}
+    </button>
+  );
+}
+
 function CopyLinkButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
   function copy() {
@@ -149,7 +167,7 @@ export default function Page() {
     <main className="relative z-10 mx-auto max-w-5xl px-5 pb-24 pt-12 sm:pt-16">
       <header className="mb-9">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sage-700">
-          <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" /> No login · No server storage · Private by design
+          <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" /> No login · Financial inputs stay on your device · Private by design
         </div>
         <h1 className="font-display text-5xl font-700 leading-[0.95] tracking-tight text-ink sm:text-7xl">
           Niyamfin
@@ -157,7 +175,7 @@ export default function Page() {
         <p className="mt-4 max-w-xl text-lg leading-relaxed text-sage-700">
           {report
             ? "An educational read of your financial health, computed in your browser from the details entered. Estimates only — not financial advice."
-            : "A private financial-health calculator from Niyam Finance."}
+            : "Check your financial health privately in your browser. No login. No financial data sent to our servers."}
         </p>
         {!report && (
           <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -178,6 +196,23 @@ export default function Page() {
           </div>
         )}
       </header>
+
+      {!report && (
+        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[
+            { icon: "💰", label: "Net worth snapshot" },
+            { icon: "🛡", label: "Emergency fund cover" },
+            { icon: "📊", label: "Debt & EMI health" },
+            { icon: "🌿", label: "Retirement readiness" },
+            { icon: "🔒", label: "Insurance gap estimate" },
+            { icon: "📋", label: "Monthly budget benchmark" },
+          ].map(({ icon, label }) => (
+            <div key={label} className="flex items-center gap-2 rounded-xl border border-sage-100 bg-white/60 px-3 py-2.5 text-sm font-medium text-sage-700">
+              <span aria-hidden="true">{icon}</span> {label}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Draft restored notice */}
       {draftRestored && !report && (
@@ -219,7 +254,24 @@ export default function Page() {
       )}
 
       {!report && (
-        <p className="mb-4 text-xs text-sage-600">Your progress may be saved locally on this device. It is not sent to Niyamfin. Use &ldquo;Clear saved draft&rdquo; to remove it.</p>
+        <div className="mb-4 space-y-2">
+          <details className="group rounded-xl border border-sage-100 bg-white/60 px-4 py-2">
+            <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold text-sage-700 [&::-webkit-details-marker]:hidden">
+              <span>🔒 How privacy works</span>
+              <span className="ml-4 flex-none text-sage-400 transition group-open:rotate-45">+</span>
+            </summary>
+            <ul className="mt-2 space-y-1 text-xs text-sage-600">
+              <li>• Inputs stay in your browser — never sent to Niyamfin</li>
+              <li>• No account is created</li>
+              <li>• Drafts may be stored locally on this device only</li>
+              <li>• You can clear the draft anytime using the button below</li>
+            </ul>
+          </details>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-sage-600">Your progress may be saved locally on this device. It is not sent to Niyamfin.</p>
+            <ClearDraftButton onClear={clearDraft} />
+          </div>
+        </div>
       )}
       <section id="intake-form" className="rounded-3xl border border-sage-100 bg-white/50 p-6 shadow-card backdrop-blur-sm sm:p-9">
         {report ? (
