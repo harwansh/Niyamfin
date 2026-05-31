@@ -4,7 +4,7 @@ export const metadata = { title: "Privacy Policy — Niyamfin" };
 
 export default function Privacy() {
   return (
-    <PageShell title="Privacy Policy" subtitle="The short version: we don't collect, store, or transmit your financial data.">
+    <PageShell title="Privacy Policy" subtitle="The short version: your financial inputs are never sent to our servers. Drafts may be saved locally on your device only.">
       <p>
         Niyamfin is operated by Niyam Finance. In this policy, &ldquo;Niyamfin,&rdquo; &ldquo;Niyam Finance,&rdquo;
         &ldquo;we,&rdquo; &ldquo;us,&rdquo; and &ldquo;our&rdquo; refer to the operator of this website and calculator.
@@ -13,7 +13,7 @@ export default function Privacy() {
       <p>
         Everything you type into Niyamfin — income, expenses, assets, debts, insurance, goals — is processed entirely in
         your own browser to compute your report. It is never sent to a server, never written to a database, and never
-        retained. When you refresh or close the page, the data is gone. There is no account and no login.
+        retained on Niyamfin servers. In-progress drafts may be saved locally on your device for convenience (see Storage below). There is no account and no login.
       </p>
       <H2>Storage</H2>
       <p>

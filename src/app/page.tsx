@@ -152,7 +152,7 @@ export default function Page() {
           <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" /> No login · No server storage · Private by design
         </div>
         <h1 className="font-display text-5xl font-700 leading-[0.95] tracking-tight text-ink sm:text-7xl">
-          Niyam<span className="text-sage-600">fin</span>
+          Niyamfin
         </h1>
         <p className="mt-4 max-w-xl text-lg leading-relaxed text-sage-700">
           {report
@@ -241,7 +241,7 @@ export default function Page() {
               },
               {
                 q: "Is this financial advice?",
-                a: "No. Niyamfin gives educational estimates based on standard personal-finance formulas (the same benchmarks taught in CFP courses). It does not know your full situation, tax position, goals, or risk tolerance. Always verify important decisions with a SEBI-registered investment adviser or a qualified financial professional.",
+                a: "No. Niyamfin gives educational estimates based on standard personal-finance formulas. It does not know your full situation, tax position, goals, or risk tolerance. Always verify important decisions with a SEBI-registered investment adviser or a qualified financial professional.",
               },
               {
                 q: "Who should use this?",
