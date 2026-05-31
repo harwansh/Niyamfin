@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 
-// Wire SIGNUP_ENDPOINT to your email service (Mailchimp, ConvertKit, Resend, etc.)
-// e.g. "https://app.us1.list-manage.com/subscribe/post?u=..." or a Next.js API route.
-// When undefined the form logs locally — replace before launch.
-const SIGNUP_ENDPOINT = process.env.NEXT_PUBLIC_SIGNUP_ENDPOINT;
+const SIGNUP_ENDPOINT = process.env.NEXT_PUBLIC_SIGNUP_ENDPOINT ?? "https://formspree.io/f/xbdbepkl";
 
 export default function UpgradeSignup() {
   const [email, setEmail] = useState("");
