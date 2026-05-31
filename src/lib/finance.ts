@@ -55,6 +55,7 @@ export interface FinancialGoal {
 export interface GoalResult extends FinancialGoal {
   futureCost: number;
   monthlySIP: number;
+  stepUpSIP?: number; // first-month SIP with annual step-up
 }
 
 export const GOAL_PRESETS: { name: string; presentCost: number; yearsAway: number }[] = [
@@ -72,6 +73,38 @@ export function calcGoal(g: FinancialGoal, inflation: number, expectedReturn: nu
   const n = Math.max(1, g.yearsAway * 12);
   const monthlySIP = Math.abs(rm) < 1e-9 ? futureCost / n : (futureCost * rm) / (Math.pow(1 + rm, n) - 1);
   return { ...g, futureCost, monthlySIP };
+}
+
+// SIP with annual step-up: returns the first-month SIP needed to reach targetAmount.
+// Uses binary search since there is no closed-form for stepped SIP.
+export function calcSipStepUp(
+  targetAmount: number,
+  months: number,
+  annualReturn: number,   // e.g. 11 for 11%
+  annualStepUp: number,   // e.g. 10 for 10% step-up per year
+): number {
+  if (months <= 0 || targetAmount <= 0) return 0;
+  const monthlyRate = annualReturn / 100 / 12;
+  const stepRate = annualStepUp / 100;
+
+  const simulate = (initialSip: number): number => {
+    let bal = 0;
+    let sip = initialSip;
+    for (let m = 0; m < months; m++) {
+      if (m > 0 && m % 12 === 0) sip *= (1 + stepRate);
+      bal = (bal + sip) * (1 + monthlyRate);
+    }
+    return bal;
+  };
+
+  let lo = 0;
+  let hi = targetAmount;
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    if (simulate(mid) < targetAmount) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) / 2;
 }
 
 // Suggested monthly budget from income, anchored to CFP ratio thresholds:
@@ -104,6 +137,161 @@ export function calcBudget(p: ProfileInput): BudgetPlan {
     actualEmi, actualExpenses, actualSavings,
     emiHeadroom: Math.max(0, maxEmi - actualEmi),
   };
+}
+
+// Debt payoff planner
+export interface DebtItem {
+  id: string;
+  name: string;
+  balance: number;
+  annualRate: number;  // e.g. 8.5 for 8.5%
+  minPayment: number;
+}
+
+export interface DebtPayoffResult {
+  monthsToFree: number;
+  totalInterest: number;
+  totalPaid: number;
+  schedule: { month: number; totalBalance: number }[];
+}
+
+export function calcDebtPayoff(
+  debts: DebtItem[],
+  extraPayment: number,
+  strategy: "avalanche" | "snowball" = "avalanche",
+): DebtPayoffResult {
+  const active = debts.filter(d => d.balance > 0 && d.annualRate >= 0);
+  if (active.length === 0) return { monthsToFree: 0, totalInterest: 0, totalPaid: 0, schedule: [] };
+
+  const items = active.map(d => ({ ...d }));
+  const totalMinPayment = items.reduce((s, d) => s + d.minPayment, 0);
+  const totalPayment = totalMinPayment + extraPayment;
+
+  let month = 0;
+  let totalInterest = 0;
+  let totalPaid = 0;
+  const schedule: { month: number; totalBalance: number }[] = [];
+
+  while (items.some(d => d.balance > 1) && month < 600) {
+    month++;
+    // Apply interest
+    for (const d of items) {
+      if (d.balance <= 0) continue;
+      const interest = d.balance * (d.annualRate / 100 / 12);
+      d.balance += interest;
+      totalInterest += interest;
+    }
+
+    // Sort by strategy for extra payment priority
+    const sorted = [...items].filter(d => d.balance > 0).sort((a, b) =>
+      strategy === "avalanche" ? b.annualRate - a.annualRate : a.balance - b.balance
+    );
+
+    let remaining = totalPayment;
+    // Pay minimums on all
+    for (const d of items) {
+      if (d.balance <= 0) continue;
+      const pay = Math.min(d.balance, d.minPayment);
+      d.balance = Math.max(0, d.balance - pay);
+      remaining -= pay;
+      totalPaid += pay;
+    }
+    // Extra to priority debt
+    for (const d of sorted) {
+      if (remaining <= 0) break;
+      const item = items.find(x => x.id === d.id)!;
+      if (item.balance <= 0) continue;
+      const pay = Math.min(item.balance, remaining);
+      item.balance = Math.max(0, item.balance - pay);
+      remaining -= pay;
+      totalPaid += pay;
+    }
+
+    const totalBalance = items.reduce((s, d) => s + Math.max(0, d.balance), 0);
+    schedule.push({ month, totalBalance });
+    if (totalBalance < 1) break;
+  }
+
+  return { monthsToFree: month, totalInterest, totalPaid, schedule };
+}
+
+// Financial milestones timeline
+export interface Milestone {
+  label: string;
+  yearsFromNow: number;
+  calendarYear: number;
+  type: "emergency" | "debtFree" | "retirement" | "target";
+  verdict: Verdict;
+  detail: string;
+}
+
+export function calcMilestones(
+  p: ProfileInput,
+  r: Report,
+  currentYear = new Date().getFullYear(),
+): Milestone[] {
+  const milestones: Milestone[] = [];
+  const surplus = r.monthlySurplus;
+
+  // Emergency fund
+  const efShortfall = Math.max(0, r.emergencyFundTarget - r.emergencyFundHave);
+  if (efShortfall <= 0) {
+    milestones.push({
+      label: "Emergency fund",
+      yearsFromNow: 0,
+      calendarYear: currentYear,
+      type: "emergency",
+      verdict: "good",
+      detail: "Already fully funded",
+    });
+  } else if (surplus > 0) {
+    const months = Math.ceil(efShortfall / surplus);
+    const yrs = months / 12;
+    milestones.push({
+      label: "Emergency fund complete",
+      yearsFromNow: yrs,
+      calendarYear: currentYear + Math.ceil(yrs),
+      type: "emergency",
+      verdict: yrs <= 1 ? "good" : yrs <= 3 ? "watch" : "alert",
+      detail: `${inrCompact(efShortfall)} gap at ${inrCompact(surplus)}/mo`,
+    });
+  }
+
+  // Debt-free estimate (assumes average 8.5% on all debt)
+  if (r.totalLiabilities > 0 && p.totalEmi > 0) {
+    const avgRate = 0.085 / 12;
+    const payment = p.totalEmi;
+    let months: number;
+    if (payment <= r.totalLiabilities * avgRate) {
+      months = 360;
+    } else {
+      months = Math.ceil(
+        -Math.log(1 - (r.totalLiabilities * avgRate) / payment) / Math.log(1 + avgRate),
+      );
+    }
+    const yrs = Math.min(months / 12, 30);
+    milestones.push({
+      label: "Debt-free (est.)",
+      yearsFromNow: yrs,
+      calendarYear: currentYear + Math.round(yrs),
+      type: "debtFree",
+      verdict: yrs <= 10 ? "good" : yrs <= 20 ? "watch" : "alert",
+      detail: `${inrCompact(r.totalLiabilities)} at current EMI`,
+    });
+  }
+
+  // Retirement
+  const yearsToRetire = Math.max(0, p.retireAge - p.age);
+  milestones.push({
+    label: `Retirement at ${p.retireAge}`,
+    yearsFromNow: yearsToRetire,
+    calendarYear: currentYear + yearsToRetire,
+    type: "retirement",
+    verdict: r.retirementGap <= 0 ? "good" : r.retirementGap < r.retirementCorpusNeeded * 0.5 ? "watch" : "alert",
+    detail: r.retirementGap > 0 ? `${inrCompact(r.retirementGap)} gap remaining` : "On track",
+  });
+
+  return milestones.sort((a, b) => a.yearsFromNow - b.yearsFromNow);
 }
 
 export type Verdict = "good" | "watch" | "alert";
@@ -209,6 +397,7 @@ export interface Insight {
   verdict: Verdict;
   headline: string;
   detail: string;
+  steps: string[]; // 2-3 actionable next steps
 }
 
 export interface Report {
@@ -344,8 +533,9 @@ export function buildReport(p: ProfileInput): Report {
   const emergencyFundTarget = monthlyExpenseForCover * 6;
   const emergencyFundHave = p.cashAndBank;
 
-  // --- Narrative insights ---
+  // --- Narrative insights with actionable steps ---
   const insights: Insight[] = [];
+
   insights.push({
     title: "Net worth",
     verdict: netWorth > 0 ? "good" : "alert",
@@ -354,21 +544,53 @@ export function buildReport(p: ProfileInput): Report {
       netWorth > 0
         ? `Your assets of ${inrCompact(totalAssets)} exceed liabilities of ${inrCompact(totalLiabilities)}, leaving a net worth of ${inrCompact(netWorth)}.`
         : `Your liabilities of ${inrCompact(totalLiabilities)} currently exceed assets of ${inrCompact(totalAssets)}. High-cost debt is commonly the first thing people look to reduce — a registered adviser can help you plan this.`,
+    steps:
+      netWorth > 0
+        ? [
+            "Track net worth quarterly in a simple spreadsheet to catch negative trends early.",
+            "Diversify beyond property — high property concentration adds liquidity risk.",
+            "Review and rebalance your investment portfolio at least once a year.",
+          ]
+        : [
+            "List every liability by interest rate — the most expensive debt costs you the most.",
+            "Audit your monthly budget for fixed expenses that can be trimmed to pay down debt faster.",
+            "Consider consulting a SEBI-registered financial planner to structure a debt-reduction plan.",
+          ],
   });
+
   if (p.creditCardDues > 0)
     insights.push({
       title: "Credit card debt",
       verdict: "alert",
       headline: "Typically the costliest debt",
       detail: `Credit card dues of ${inrCompact(p.creditCardDues)} usually carry the highest interest of any borrowing, which is why many planning frameworks treat them as a priority to clear. This is general information, not a recommendation.`,
+      steps: [
+        "Pay more than the minimum every month — the minimum payment barely covers interest.",
+        "Stop adding new charges until the balance is cleared to avoid compounding the debt.",
+        "If juggling multiple cards, target the highest-rate card first (avalanche method) to minimise total interest.",
+      ],
     });
+
   insights.push({
     title: "Emergency fund",
     verdict: emergencyFundHave >= emergencyFundTarget ? "good" : emergencyFundHave >= emergencyFundTarget / 2 ? "watch" : "alert",
     headline:
       emergencyFundHave >= emergencyFundTarget ? "Well cushioned" : "Below the common buffer range",
     detail: `A commonly-cited 6-month buffer for your outflow would be ${inrCompact(emergencyFundTarget)}. You hold ${inrCompact(emergencyFundHave)} in cash/bank. The 3–6 month range is a general guideline, not a target that fits everyone.`,
+    steps:
+      emergencyFundHave >= emergencyFundTarget
+        ? [
+            "Keep your emergency fund in a high-yield savings account or liquid mutual fund.",
+            "Replenish it promptly if you ever draw on it.",
+            "Review the target annually as expenses change.",
+          ]
+        : [
+            `Save ${inrCompact(Math.max(0, emergencyFundTarget / 2 - emergencyFundHave))} more to reach the 3-month minimum as a first milestone.`,
+            "Automate a fixed amount to a separate savings account each month — out of sight, out of reach.",
+            "Consider a liquid mutual fund for slightly higher returns than a savings account while remaining accessible.",
+          ],
   });
+
   insights.push({
     title: "Life insurance",
     verdict: lifeCoverGap <= 0 ? "good" : lifeCoverGap < recommendedLifeCover * 0.4 ? "watch" : "alert",
@@ -377,13 +599,39 @@ export function buildReport(p: ProfileInput): Report {
       p.dependents > 0
         ? `With ${p.dependents} dependent(s), an income-replacement (Human Life Value) estimate works out to roughly ${inrCompact(recommendedLifeCover)}. You have ${inrCompact(p.lifeCover)}${lifeCoverGap > 0 ? `, about ${inrCompact(lifeCoverGap)} below that estimate.` : "."} The right cover for you depends on factors only a licensed professional can assess.`
         : `With no dependents, the estimate focuses on covering liabilities — roughly ${inrCompact(recommendedLifeCover)}. Your needs may differ.`,
+    steps:
+      lifeCoverGap > 0
+        ? [
+            "Term life insurance is typically the most cost-effective way to close a cover gap — premiums are lowest when you're young and healthy.",
+            `Aim for a sum assured of at least ${inrCompact(recommendedLifeCover)} as a starting point, then verify with a licensed adviser.`,
+            "Review your cover each time a major life event occurs (new child, home loan, salary increase).",
+          ]
+        : [
+            "Verify that your policy's sum assured is paid up and nominations are updated.",
+            "Review annually — life events like a new loan or dependent can change your needs.",
+            "Check whether your employer group cover lapses if you change jobs.",
+          ],
   });
+
   insights.push({
     title: "Health insurance",
     verdict: healthCoverGap <= 0 ? "good" : "watch",
     headline: healthCoverGap <= 0 ? "Within the rule-of-thumb range" : "Below the rule-of-thumb range",
     detail: `For a ${p.cityTier} family of ${p.dependents + 1}, a common rule-of-thumb floater is around ${inrCompact(recommendedHealthCover)}. You have ${inrCompact(p.healthCover)}. Actual adequate cover depends on medical costs and the specific policy.`,
+    steps:
+      healthCoverGap > 0
+        ? [
+            `Consider topping up your floater to at least ${inrCompact(recommendedHealthCover)} — a super top-up plan can do this cost-effectively.`,
+            "Check whether your employer's group health cover lapses on resignation — if so, an individual policy is essential.",
+            "Read the policy's waiting period clauses for pre-existing conditions before buying.",
+          ]
+        : [
+            "Review the policy's room-rent cap and sub-limits — a high sum insured with a low room cap can leave significant out-of-pocket costs.",
+            "Port your policy to a better insurer during renewal if needed; you retain continuity benefits.",
+            "Add a super top-up if medical inflation is a concern — it's inexpensive for the additional cover.",
+          ],
   });
+
   insights.push({
     title: "Retirement",
     verdict: retirementGap <= 0 ? "good" : retirementGap < retirementCorpusNeeded * 0.5 ? "watch" : "alert",
@@ -392,6 +640,18 @@ export function buildReport(p: ProfileInput): Report {
       retirementGap > 0
         ? `Under these assumptions, the estimate suggests a corpus of about ${inrCompact(retirementCorpusNeeded)} by age ${p.retireAge}, while your current retirement savings project to ${inrCompact(retirementProjected)}. In this model, investing about ${inrCompact(retirementSIP)}/month would close the gap — illustrative only.`
         : `Under these assumptions, your projected retirement savings of ${inrCompact(retirementProjected)} already meet the estimated need of ${inrCompact(retirementCorpusNeeded)}.`,
+    steps:
+      retirementGap > 0
+        ? [
+            `Start (or increase) an SIP of around ${inrCompact(retirementSIP)}/mo in diversified equity funds for long-term growth.`,
+            "Maximise EPF voluntary contributions and NPS (Section 80CCD) for tax-efficient retirement saving.",
+            "Delay retirement by even 2–3 years or increase your savings rate — both have an outsized effect on the corpus.",
+          ]
+        : [
+            "Stay the course — avoid withdrawing retirement savings early, as compounding is most powerful in the final years.",
+            "As you approach retirement, gradually shift from equity to debt to reduce sequence-of-returns risk.",
+            "Plan a withdrawal strategy (SWP from MF / annuity combination) well before your retirement date.",
+          ],
   });
 
   return {
